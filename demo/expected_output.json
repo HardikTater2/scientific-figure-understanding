@@ -1,0 +1,25 @@
+{
+  "paper_id": "sample_paper",
+  "title": "Deep Residual Learning vs Vision Transformers for Visual Recognition",
+  "query": "What does this figure show regarding accuracy and training epochs?",
+  "expected_entities": [
+    "ResNet-50",
+    "ViT-Base",
+    "CIFAR-10",
+    "Top-1 Accuracy",
+    "85.3%",
+    "88.1%"
+  ],
+  "expected_figure_elements": [
+    "X-Axis",
+    "Y-Axis",
+    "Legend Blue",
+    "Legend Purple"
+  ],
+  "expected_grounding_edges": [
+    "REPRESENTS",
+    "CORRESPONDS_TO",
+    "ACHIEVES",
+    "EVALUATED_ON"
+  ]
+}

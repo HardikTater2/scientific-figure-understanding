@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# Node / frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Secrets
+.env
+.env.*
+*.key
+
+# Large artifacts (models, indexes, checkpoints)
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.faiss
+*.index
+
+# OS
+.DS_Store

@@ -1,0 +1,58 @@
+# Configuration for Multi-Modal Scientific Visualization Understanding
+
+project:
+  name: "Multi-Modal Scientific Visualization Understanding"
+  version: "0.1.0-mvp"
+  seed: 42
+
+system:
+  device: "mps"  # Options: mps, cpu, cuda
+  fallback_device: "cpu"
+  num_workers: 2
+  log_level: "INFO"
+
+models:
+  ner:
+    model_name: "allenai/scibert_scivocab_uncased"
+    max_length: 512
+    batch_size: 16
+    confidence_threshold: 0.6
+  retrieval:
+    text_embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+    multimodal_embedding_model: "openai/clip-vit-base-patch32"
+    vector_store: "faiss"  # Options: faiss, memory
+    top_k: 5
+  vision:
+    ocr_engine: "easyocr" # Fallback: pytesseract / simple_opencv
+    layout_detection: "opencv"
+  captioning:
+    vlm_model: "Salesforce/blip-image-captioning-base" # Practical lightweight VLM for M4 Pro
+    max_new_tokens: 150
+    temperature: 0.7
+  nli_verification:
+    model_name: "cross-encoder/nli-distilroberta-base"
+
+hierarchical_retrieval:
+  chunk_sizes:
+    paper: 2000
+    section: 1000
+    paragraph: 300
+    entity: 50
+  weights:
+    w_paper: 0.15
+    w_section: 0.25
+    w_paragraph: 0.40
+    w_entity: 0.20
+
+scq_evaluation:
+  weights:
+    w_entity_coverage: 0.30
+    w_technical_correctness: 0.30
+    w_reconstruction_fidelity: 0.20
+    w_retrieval_accuracy: 0.20
+
+ablation_switches:
+  hierarchical_level: "all" # Options: none, paper_only, paper_section, paper_section_paragraph, all
+  entity_grounding_enabled: true
+  multimodal_mode: "hybrid" # Options: text_only, figure_only, hybrid
+  graph_enabled: true
