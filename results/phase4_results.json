@@ -1,0 +1,182 @@
+{
+  "benchmark": {
+    "name": "SciFig-Controlled",
+    "version": "1.0",
+    "path": "data/benchmark",
+    "generator_seed": 42,
+    "num_train": 282,
+    "num_test": 118,
+    "test_molecules_structure_disjoint": [
+      "1AKE",
+      "1HVR",
+      "2BEG",
+      "4AKE",
+      "5A7U"
+    ]
+  },
+  "seed": 42,
+  "hardware": {
+    "platform": "Linux-6.18.44-fc-v80-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "torch": "2.14.1+cu130",
+    "threads": 2,
+    "device": "cpu"
+  },
+  "timestamp": "2026-10-08T19:44:14",
+  "figure_classifier": {
+    "architecture": "4-block CNN (16-32-64-64), 128x128 RGB input, 7 classes",
+    "training": {
+      "train_time_s": 12.28,
+      "epochs": 25,
+      "batch_size": 32,
+      "lr": 0.001,
+      "optimizer": "Adam",
+      "weight_decay": 0.0001,
+      "precise_bn": true,
+      "initial_loss": 1.5958,
+      "final_loss": 0.0424,
+      "num_train": 282
+    },
+    "test": {
+      "figure_type_accuracy": 1.0,
+      "is_3d_accuracy": 1.0,
+      "is_3d_precision": 1.0,
+      "is_3d_recall": 1.0,
+      "num_test": 118,
+      "inference_ms_per_figure_batched": 0.586
+    },
+    "text_keyword_baseline_test": {
+      "is_3d_accuracy": 1.0,
+      "is_3d_precision": 1.0,
+      "is_3d_recall": 1.0
+    }
+  },
+  "geometry_alignment": {
+    "architecture": {
+      "image": "FigureImageEncoder (CNN) -> 64-d",
+      "point_cloud": "PointNet (vanilla, 1024 points) -> 64-d",
+      "multi_view": "6 orthographic views (occupancy/near/far depth) -> shared CNN -> max-pool -> 64-d",
+      "loss": "multi-positive InfoNCE, image<->pointnet + image<->multiview"
+    },
+    "model_selection_on_validation": {
+      "val_molecules": [
+        "1A28",
+        "2XHE"
+      ],
+      "num_fit": 234,
+      "num_val": 48,
+      "criterion": "val MRR (pointnet+multiview)",
+      "candidates": {
+        "rotation_augmentation=True": {
+          "recall@1": 0.2609,
+          "recall@5": 0.6957,
+          "mrr": 0.453,
+          "protein_recall@1": 0.0,
+          "surface_recall@1": 0.8,
+          "scatter3d_recall@1": 0.25
+        },
+        "rotation_augmentation=False": {
+          "recall@1": 0.4348,
+          "recall@5": 0.8261,
+          "mrr": 0.6109,
+          "protein_recall@1": 0.6,
+          "surface_recall@1": 0.6,
+          "scatter3d_recall@1": 0.125
+        }
+      },
+      "selected_rotation_augmentation": false
+    },
+    "training": {
+      "train_time_s": 205.55,
+      "epochs": 60,
+      "batch_size": 32,
+      "lr": 0.001,
+      "optimizer": "Adam",
+      "weight_decay": 0.0001,
+      "precise_bn": true,
+      "rotation_augmentation": false,
+      "num_views": 6,
+      "initial_loss": 6.5178,
+      "final_loss": 0.5691,
+      "num_train_3d_figures": 137,
+      "num_train_geometries": 93
+    },
+    "test_trained": {
+      "num_queries": 63,
+      "gallery_size": 43,
+      "chance_recall@1": 0.0233,
+      "results": {
+        "pointnet": {
+          "recall@1": 0.2222,
+          "recall@5": 0.5079,
+          "mrr": 0.364,
+          "protein_recall@1": 0.32,
+          "surface_recall@1": 0.2222,
+          "scatter3d_recall@1": 0.1
+        },
+        "multiview": {
+          "recall@1": 0.1905,
+          "recall@5": 0.5556,
+          "mrr": 0.3526,
+          "protein_recall@1": 0.32,
+          "surface_recall@1": 0.0556,
+          "scatter3d_recall@1": 0.15
+        },
+        "pointnet+multiview": {
+          "recall@1": 0.1587,
+          "recall@5": 0.6032,
+          "mrr": 0.351,
+          "protein_recall@1": 0.2,
+          "surface_recall@1": 0.1667,
+          "scatter3d_recall@1": 0.1
+        }
+      },
+      "inference_ms": {
+        "image_encoder_per_figure": 0.436,
+        "pointnet_per_geometry": 7.524,
+        "multiview_per_geometry_excl_render": 0.69
+      }
+    },
+    "test_untrained_baseline": {
+      "num_queries": 63,
+      "gallery_size": 43,
+      "chance_recall@1": 0.0233,
+      "results": {
+        "pointnet": {
+          "recall@1": 0.0159,
+          "recall@5": 0.0794,
+          "mrr": 0.0805,
+          "protein_recall@1": 0.0,
+          "surface_recall@1": 0.0,
+          "scatter3d_recall@1": 0.05
+        },
+        "multiview": {
+          "recall@1": 0.0159,
+          "recall@5": 0.0794,
+          "mrr": 0.0887,
+          "protein_recall@1": 0.0,
+          "surface_recall@1": 0.0556,
+          "scatter3d_recall@1": 0.0
+        },
+        "pointnet+multiview": {
+          "recall@1": 0.0159,
+          "recall@5": 0.0794,
+          "mrr": 0.0855,
+          "protein_recall@1": 0.0,
+          "surface_recall@1": 0.0556,
+          "scatter3d_recall@1": 0.0
+        }
+      },
+      "inference_ms": {
+        "image_encoder_per_figure": 0.305,
+        "pointnet_per_geometry": 8.0,
+        "multiview_per_geometry_excl_render": 0.981
+      }
+    }
+  },
+  "caveats": [
+    "SciFig-Controlled is synthetic (matplotlib renders); in-domain accuracy does not transfer to real paper figures.",
+    "Protein test structures are disjoint from training structures; surfaces and 3D scatters are new random instances of the same parametric families.",
+    "No pretrained vision weights were available (HuggingFace / download.pytorch.org unreachable); all encoders are trained from scratch."
+  ]
+}

@@ -1,0 +1,411 @@
+{
+  "benchmark": {
+    "name": "SciFig-Controlled",
+    "version": "1.0",
+    "path": "data/benchmark",
+    "generator_seed": 42,
+    "num_fit": 227,
+    "num_val": 55,
+    "num_test": 118,
+    "num_test_3d": 63
+  },
+  "element_setting": "end-to-end OCR elements; gold entity lists (oracle NER)",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "gnn_epochs": 150,
+  "retrieval_weights": {
+    "w_text": 0.4,
+    "w_gnn": 0.3,
+    "w_2d": 0.2,
+    "w_3d": 0.1
+  },
+  "hardware": {
+    "platform": "Linux-6.18.44-fc-v80-x86_64-with-glibc2.39",
+    "torch": "2.14.1+cu130",
+    "threads": 4,
+    "device": "cpu"
+  },
+  "timestamp": "2026-10-08T19:54:42",
+  "shared_latency_ms_per_figure": {
+    "ocr_uncached_median": 2003.4,
+    "3d_detector_median": 6.904,
+    "image_embeddings_median": 7.412
+  },
+  "configurations": {
+    "C": {
+      "name": "GNN + CLIP",
+      "status": "BLOCKED: CLIP weights 'openai/clip-vit-base-patch32' could not be loaded: OSError: Can't load the configuration of 'openai/clip-vit-base-patch32'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'openai/clip-vit-base-patch32' is the correct path to a directory containing a config.json file",
+      "note": "Not experimentally validated: pretrained CLIP weights unavailable."
+    },
+    "A": {
+      "name": "NetworkX rules",
+      "status": "MEASURED",
+      "grounding": {
+        "test": {
+          "precision": 0.2597,
+          "recall": 0.7146,
+          "f1": 0.381,
+          "grounding_accuracy@1": 0.32,
+          "mrr": 0.4284,
+          "tp": 288,
+          "fp": 821,
+          "fn": 115
+        },
+        "train_time_s": 0.0,
+        "inference_ms_per_figure_median": 0.078
+      },
+      "retrieval_caption_to_figure": {
+        "recall@1": 0.822,
+        "recall@5": 0.9322,
+        "mrr": 0.8683,
+        "gallery_size": 118,
+        "latency_ms_per_query_median": 4.222
+      },
+      "retrieval_geometry_to_figure": "N/A (no 3D branch)",
+      "scq": {
+        "mean": 0.5432,
+        "std": 0.263,
+        "components_mean": {
+          "entity_coverage": 0.4965,
+          "technical_correctness": 0.5537,
+          "reconstruction_fidelity": 0.2723,
+          "retrieval_accuracy": 0.8683
+        }
+      },
+      "subset_3d_figures": {
+        "n": 63,
+        "scq_mean": 0.4146,
+        "retrieval_mrr": 0.7612
+      }
+    },
+    "B": {
+      "name": "NetworkX + PyG GNN",
+      "status": "MEASURED",
+      "grounding": {
+        "test": {
+          "precision": {
+            "mean": 0.962,
+            "std": 0.0102
+          },
+          "recall": {
+            "mean": 0.8553,
+            "std": 0.0047
+          },
+          "f1": {
+            "mean": 0.9054,
+            "std": 0.0034
+          },
+          "grounding_accuracy@1": {
+            "mean": 0.8958,
+            "std": 0.0035
+          },
+          "mrr": {
+            "mean": 0.8981,
+            "std": 0.0019
+          },
+          "tp": {
+            "mean": 344.6667,
+            "std": 1.8856
+          },
+          "fp": {
+            "mean": 13.6667,
+            "std": 3.8586
+          },
+          "fn": {
+            "mean": 58.3333,
+            "std": 1.8856
+          }
+        },
+        "per_seed": [
+          {
+            "precision": 0.9716,
+            "recall": 0.8486,
+            "f1": 0.906,
+            "grounding_accuracy@1": 0.8983,
+            "mrr": 0.8995,
+            "tp": 342,
+            "fp": 10,
+            "fn": 61
+          },
+          {
+            "precision": 0.9479,
+            "recall": 0.8586,
+            "f1": 0.901,
+            "grounding_accuracy@1": 0.8908,
+            "mrr": 0.8954,
+            "tp": 346,
+            "fp": 19,
+            "fn": 57
+          },
+          {
+            "precision": 0.9665,
+            "recall": 0.8586,
+            "f1": 0.9093,
+            "grounding_accuracy@1": 0.8983,
+            "mrr": 0.8995,
+            "tp": 346,
+            "fp": 12,
+            "fn": 57
+          }
+        ],
+        "train_time_s": {
+          "mean": 4.086,
+          "per_seed": [
+            4.032,
+            4.396,
+            3.83
+          ]
+        },
+        "inference_ms_per_figure_median": 4.007
+      },
+      "retrieval_caption_to_figure": {
+        "recall@1": 0.839,
+        "recall@5": 0.9407,
+        "mrr": 0.8803,
+        "gallery_size": 118,
+        "latency_ms_per_query_median": 2.657
+      },
+      "retrieval_geometry_to_figure": "N/A (no 3D branch)",
+      "scq": {
+        "mean": 0.5697,
+        "std": 0.2873,
+        "components_mean": {
+          "entity_coverage": 0.5609,
+          "technical_correctness": 0.5282,
+          "reconstruction_fidelity": 0.3343,
+          "retrieval_accuracy": 0.8803
+        }
+      },
+      "subset_3d_figures": {
+        "n": 63,
+        "scq_mean": 0.4146,
+        "retrieval_mrr": 0.7759
+      }
+    },
+    "D": {
+      "name": "GNN + 3D branch",
+      "status": "MEASURED",
+      "grounding": {
+        "test": {
+          "precision": {
+            "mean": 0.9682,
+            "std": 0.0013
+          },
+          "recall": {
+            "mean": 0.8561,
+            "std": 0.002
+          },
+          "f1": {
+            "mean": 0.9087,
+            "std": 0.0017
+          },
+          "grounding_accuracy@1": {
+            "mean": 0.8975,
+            "std": 0.0012
+          },
+          "mrr": {
+            "mean": 0.8991,
+            "std": 0.0006
+          },
+          "tp": {
+            "mean": 345.0,
+            "std": 0.8165
+          },
+          "fp": {
+            "mean": 11.3333,
+            "std": 0.4714
+          },
+          "fn": {
+            "mean": 58.0,
+            "std": 0.8165
+          }
+        },
+        "per_seed": [
+          {
+            "precision": 0.9663,
+            "recall": 0.8536,
+            "f1": 0.9065,
+            "grounding_accuracy@1": 0.8983,
+            "mrr": 0.8995,
+            "tp": 344,
+            "fp": 12,
+            "fn": 59
+          },
+          {
+            "precision": 0.9691,
+            "recall": 0.8561,
+            "f1": 0.9091,
+            "grounding_accuracy@1": 0.8983,
+            "mrr": 0.8995,
+            "tp": 345,
+            "fp": 11,
+            "fn": 58
+          },
+          {
+            "precision": 0.9692,
+            "recall": 0.8586,
+            "f1": 0.9105,
+            "grounding_accuracy@1": 0.8958,
+            "mrr": 0.8983,
+            "tp": 346,
+            "fp": 11,
+            "fn": 57
+          }
+        ],
+        "train_time_s": {
+          "mean": 4.002,
+          "per_seed": [
+            3.966,
+            4.023,
+            4.017
+          ]
+        },
+        "inference_ms_per_figure_median": 4.004
+      },
+      "retrieval_caption_to_figure": {
+        "recall@1": 0.839,
+        "recall@5": 0.9492,
+        "mrr": 0.8843,
+        "gallery_size": 118,
+        "latency_ms_per_query_median": 4.13
+      },
+      "retrieval_geometry_to_figure": {
+        "recall@1": 0.1395,
+        "recall@5": 0.4419,
+        "mrr": 0.3077,
+        "num_queries": 43,
+        "gallery": "test figures classified as 3D by the detector",
+        "chance_recall@1_approx": 0.0233
+      },
+      "scq": {
+        "mean": 0.5723,
+        "std": 0.2862,
+        "components_mean": {
+          "entity_coverage": 0.5654,
+          "technical_correctness": 0.5282,
+          "reconstruction_fidelity": 0.3366,
+          "retrieval_accuracy": 0.8843
+        }
+      },
+      "subset_3d_figures": {
+        "n": 63,
+        "scq_mean": 0.4161,
+        "retrieval_mrr": 0.7834
+      }
+    },
+    "E": {
+      "name": "Full multimodal (text + 2D + 3D + GNN)",
+      "status": "MEASURED",
+      "grounding": {
+        "test": {
+          "precision": {
+            "mean": 0.9666,
+            "std": 0.0056
+          },
+          "recall": {
+            "mean": 0.8602,
+            "std": 0.0065
+          },
+          "f1": {
+            "mean": 0.9103,
+            "std": 0.0012
+          },
+          "grounding_accuracy@1": {
+            "mean": 0.8966,
+            "std": 0.0012
+          },
+          "mrr": {
+            "mean": 0.8987,
+            "std": 0.0006
+          },
+          "tp": {
+            "mean": 346.6667,
+            "std": 2.6247
+          },
+          "fp": {
+            "mean": 12.0,
+            "std": 2.1602
+          },
+          "fn": {
+            "mean": 56.3333,
+            "std": 2.6247
+          }
+        },
+        "per_seed": [
+          {
+            "precision": 0.964,
+            "recall": 0.8635,
+            "f1": 0.911,
+            "grounding_accuracy@1": 0.8983,
+            "mrr": 0.8995,
+            "tp": 348,
+            "fp": 13,
+            "fn": 55
+          },
+          {
+            "precision": 0.9614,
+            "recall": 0.866,
+            "f1": 0.9112,
+            "grounding_accuracy@1": 0.8958,
+            "mrr": 0.8983,
+            "tp": 349,
+            "fp": 14,
+            "fn": 54
+          },
+          {
+            "precision": 0.9744,
+            "recall": 0.8511,
+            "f1": 0.9086,
+            "grounding_accuracy@1": 0.8958,
+            "mrr": 0.8983,
+            "tp": 343,
+            "fp": 9,
+            "fn": 60
+          }
+        ],
+        "train_time_s": {
+          "mean": 4.151,
+          "per_seed": [
+            4.292,
+            3.991,
+            4.169
+          ]
+        },
+        "inference_ms_per_figure_median": 4.075
+      },
+      "retrieval_caption_to_figure": {
+        "recall@1": 0.839,
+        "recall@5": 0.9407,
+        "mrr": 0.8856,
+        "gallery_size": 118,
+        "latency_ms_per_query_median": 4.236
+      },
+      "retrieval_geometry_to_figure": {
+        "recall@1": 0.1395,
+        "recall@5": 0.4419,
+        "mrr": 0.3077,
+        "num_queries": 43,
+        "gallery": "test figures classified as 3D by the detector",
+        "chance_recall@1_approx": 0.0233
+      },
+      "scq": {
+        "mean": 0.5726,
+        "std": 0.2858,
+        "components_mean": {
+          "entity_coverage": 0.5654,
+          "technical_correctness": 0.5282,
+          "reconstruction_fidelity": 0.3369,
+          "retrieval_accuracy": 0.8856
+        }
+      },
+      "subset_3d_figures": {
+        "n": 63,
+        "scq_mean": 0.4166,
+        "retrieval_mrr": 0.7856
+      }
+    }
+  }
+}

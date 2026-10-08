@@ -133,6 +133,8 @@ export interface ThreeDBranchAnalysis {
     confidence: number;
     detected_cues: string[];
   };
+  raw_geometry_available?: boolean;
+  image_to_3d_embedding_dim?: number;
   pointnet_embedding_norm?: number;
   multiview_embedding_norm?: number;
   status: string;
@@ -160,4 +162,6 @@ export interface PipelineResult {
   scq_evaluation: SCQEvaluation;
   "3d_branch_analysis"?: ThreeDBranchAnalysis;
   status_declarations: Record<string, string>;
+  /** true when the UI is showing built-in demo data instead of a backend result */
+  is_mock_data?: boolean;
 }

@@ -53,11 +53,22 @@ def test_hierarchical_retrieval():
     print("✓ test_hierarchical_retrieval passed")
 
 def test_figure_processor():
+    import pytest
     processor = FigureProcessor()
+    if not processor.ocr.available:
+        pytest.skip(f"OCR engine unavailable: {processor.ocr.unavailable_reason}")
     res = processor.process_figure("demo/sample_figure.png")
     assert "elements" in res
-    assert len(res["elements"]) > 0
+    texts = " ".join(e["text"] for e in res["elements"]).lower()
+    # the demo figure has a real x-axis label "Training Epochs (0 - 300)"
+    assert "epoch" in texts
+    assert any(e["type"] == "CHART_REGION" for e in res["elements"])
     print("✓ test_figure_processor passed")
+
+
+def test_figure_processor_missing_file_returns_no_elements():
+    res = FigureProcessor().process_figure("does/not/exist.png")
+    assert res["elements"] == [] and "NOT AVAILABLE" in res["status"]
 
 def test_entity_grounding_graph():
     graph_builder = EntityGroundingGraph()

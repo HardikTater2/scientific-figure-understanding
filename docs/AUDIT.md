@@ -213,3 +213,15 @@ Phase 3 is not stable in the sense required by §41, so Phase 4 should wait.
 6. **Phase 4.** Image-based 3D-figure classifier (labelled set) → PDB/AlphaFold-rendered
    benchmark with real geometry → pretrained point-cloud encoder → graph integration →
    ablation A–E with measured numbers only.
+
+---
+
+## Resolution (same day)
+
+All findings above were addressed on branch `claude/scientific-figure-understanding-9i8ve7`:
+fabricated result files deleted and the scripts that produced them rewritten to measure;
+placeholder components replaced (OCR element extraction, pixel-based 3D detector) or relabelled
+(NER, captioning, verification as PROTOTYPE; CLIP as BLOCKED); demo data and the synthetic point
+cloud relabelled; config dotted-key bug, API sample routing and silent frontend mock fallback
+fixed. Measured results on a new controlled benchmark with real PDB geometry are in
+`implementation_plan.md` and `results/`.
