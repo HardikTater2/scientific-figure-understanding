@@ -14,19 +14,40 @@ Read these in order:
 
 ## 1. What you received
 
-If you got the project as a **handover zip**, it contains everything in the git repository, the full
-commit history (`.git/`), and these artefacts that git does not track. With them you can continue
-right away, with no need to retrain anything first:
+The handover comes as **two files** (split to stay under attachment size limits):
+
+| File | Contents |
+|---|---|
+| `NLP-project-handover.zip` | The project folder: all code, docs, results, the SciCap subset, and the artefacts git does not track (trained models and OCR caches, listed below) |
+| `NLP-git-history.bundle` | The complete git history (all commits and branches) in one file |
+
+Artefacts included in the zip that git does not track:
 
 | Artefact | Path | Recreate with |
 |---|---|---|
 | Trained models (3) | `models/checkpoints/*.pt` | `pipelines/evaluate_phase4.py`, `pipelines/evaluate_gnn.py` |
-| Synthetic benchmark images + geometry | `data/benchmark/images/`, `data/benchmark/geometry/` | `python -m src.data.benchmark_generator --out data/benchmark` |
 | OCR caches (save ~30 min) | `data/benchmark/cache/`, `data/scicap_subset/cache/` | filled automatically on first run |
 
-The git remote still points to the original GitHub repository. To push to your own, run
-`git remote set-url origin <your-repo-url>`. Development happens on branch
-`claude/scientific-figure-understanding-9i8ve7`.
+**One step is needed after unzipping.** Regenerate the synthetic benchmark images (left out to save
+space; about 1 minute). With the matplotlib version in `requirements-lock.txt` they are byte-identical
+to the originals, so the OCR cache and all results still match:
+
+```bash
+python -m src.data.benchmark_generator --out data/benchmark
+```
+
+**To restore the git history** (recommended), run this inside the unzipped `NLP` folder:
+
+```bash
+git init -q
+git fetch -q ../NLP-git-history.bundle "refs/heads/*:refs/heads/*"
+git checkout -f claude/scientific-figure-understanding-9i8ve7
+git remote add origin <your-repo-url>          # then: git push -u origin --all
+```
+
+`git status` should then show a clean working tree, and `git log` shows the full history.
+Development happens on branch `claude/scientific-figure-understanding-9i8ve7`. The original
+repository is https://github.com/gayatriyadavv/NLP.
 
 ## 2. Setup (about 10 minutes)
 
