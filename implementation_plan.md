@@ -97,7 +97,7 @@ Held-out-names experiment: 12 entities never linked in training (82 test links, 
 
 | Detector | is-3D acc. | is-3D P | is-3D R | 7-way type acc. | Train | Inference |
 |---|---:|---:|---:|---:|---:|---:|
-| CNN on pixels (128×128) | 1.000 | 1.000 | 1.000 | 1.000 | 12.3 s, 25 epochs | 0.59 ms / figure (batched) |
+| CNN on pixels (128×128) | 1.000 | 1.000 | 1.000 | 1.000 | 8.9 s, 25 epochs | 0.59 ms / figure (batched) |
 | Text keywords (caption + paragraph) | 1.000 | 1.000 | 1.000 | – | – | – |
 
 Both are saturated on this benchmark: the text result is an artefact of template text, and the
@@ -114,22 +114,24 @@ miscalibrated. All BatchNorm models are now recalibrated on the full training se
 
 63 test 3D figures (25 protein views of 5 unseen structures, 18 surfaces, 20 3D scatters) query a
 gallery of 43 unique test geometries. Rotation augmentation was **off**, selected on a
-structure-disjoint validation split (val MRR 0.611 vs 0.453 with augmentation).
+structure-disjoint validation split (val MRR 0.653 vs 0.466 with augmentation). Final model trained
+with seeds 42/43/44; mean ± std shown.
 
 | Geometry encoder | R@1 | R@5 | MRR | Protein R@1 | Surface R@1 | Scatter3D R@1 |
 |---|---:|---:|---:|---:|---:|---:|
 | chance | 0.023 | – | – | – | – | – |
 | untrained (pointnet+multiview) | 0.016 | 0.079 | 0.086 | 0.00 | 0.06 | 0.00 |
-| PointNet | **0.222** | 0.508 | **0.364** | 0.32 | 0.22 | 0.10 |
-| Multi-view | 0.191 | 0.556 | 0.353 | 0.32 | 0.06 | 0.15 |
-| PointNet + multi-view (sum) | 0.159 | **0.603** | 0.351 | 0.20 | 0.17 | 0.10 |
+| PointNet | 0.138 ± 0.015 | 0.460 ± 0.052 | 0.291 ± 0.011 | 0.15 | 0.15 | 0.12 |
+| Multi-view | **0.159 ± 0.026** | 0.492 ± 0.022 | **0.319 ± 0.024** | 0.25 | 0.13 | 0.07 |
+| PointNet + multi-view (sum) | 0.153 ± 0.033 | **0.497 ± 0.007** | 0.317 ± 0.030 | 0.17 | 0.17 | 0.12 |
 
-Training: 60 epochs, Adam lr 1e-3, wd 1e-4, batch 32, multi-positive InfoNCE, 205.6 s
-(137 figures, 93 geometries). Inference: image encoder 0.44 ms / figure, PointNet 7.5 ms /
-geometry, multi-view CNN 0.69 ms / geometry (rendering excluded).
+Training: 60 epochs, Adam lr 1e-3, wd 1e-4, batch 32, multi-positive InfoNCE, ~150 s per seed
+(137 figures, 93 geometries), with precise-BN recalibration.
 
-Alignment is clearly above chance and above the untrained baseline, including for unseen
-protein structures, but far from reliable (R@1 ≈ 0.2).
+**Correction (2026-10-14):** an earlier single-seed run reported PointNet R@1 = 0.222. A rerun with
+the same seed but a different CPU thread count gave 0.127, so single runs are unreliable; the table
+above is the 3-seed mean. Alignment is clearly above chance and the untrained baseline, including for
+unseen protein structures, but weak (R@1 ≈ 0.14–0.16).
 
 ### 3.5 Ablation A–E — `pipelines/run_ablation.py` → `results/ablation_results.{json,md}`
 
@@ -153,7 +155,7 @@ SCQ components (B): entity coverage 0.561, technical correctness 0.528, reconstr
 text + 2D + GNN?*): on this benchmark, **not for grounding or text→figure retrieval** — D and E
 differ from B by less than one seed-std in grounding F1 and by ≤ 0.006 MRR in retrieval (118
 queries, no significance test; treat as no effect). The 3D branch's value is a **new capability**:
-retrieving the figure that depicts a given 3D structure (geometry→figure R@1 0.14, chance ≈ 0.02),
+retrieving the figure that depicts a given 3D structure (geometry→figure R@1 ≈ 0.14, chance ≈ 0.02),
 which no 2D/text configuration can do.
 
 ## 4. Reproduction

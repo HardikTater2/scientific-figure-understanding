@@ -42,6 +42,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from pipelines.evaluate_gnn import figure_instance, mean_std, run_learned, run_rules
 from src.data.benchmark_generator import load_benchmark
+from src.evaluation.bootstrap import compare_means, compare_micro_f1
 from src.evaluation.hallucination_checker import HallucinationChecker
 from src.generation.caption_generator import GroundedCaptionGenerator
 from src.grounding.grounding_features import build_grounding_graph
@@ -221,6 +222,7 @@ def main():
           "gallery": "test figures classified as 3D by the detector",
           "chance_recall@1_approx": round(1 / max(len(gal_ids), 1), 4)}
 
+    per_item: Dict[str, Dict[str, Any]] = {}  # cfg -> per-figure arrays for paired bootstrap
     retriever = MultimodalRetriever(weights=RETRIEVAL_WEIGHTS)
     captioner = GroundedCaptionGenerator()
     verifier = HallucinationChecker(use_nli=False)
@@ -305,6 +307,29 @@ def main():
                                     "retrieval_mrr": round(float(np.mean([1 / ranks[i] for i in idx3])), 4)}
         print(f"  T2 MRR={res['retrieval_caption_to_figure']['mrr']}  SCQ={res['scq']['mean']}")
         report["configurations"][cfg] = res
+        per_item[cfg] = {
+            "rr": (1.0 / ranks).tolist(), "scq": scq,
+            "link_counts": [[len(l & i["gold"]), len(l - i["gold"]), i["num_gold_links"] - len(l & i["gold"])]
+                            for l, i in zip(links_per_fig, test_i)]}
+
+    # ---- paired bootstrap comparisons (resampling test figures) ------------
+    comparisons = {}
+    for a_cfg, b_cfg in (("A", "B"), ("B", "D"), ("B", "E"), ("D", "E")):
+        A, B = per_item[a_cfg], per_item[b_cfg]
+        comparisons[f"{b_cfg}_minus_{a_cfg}"] = {
+            "grounding_f1_seed42": compare_micro_f1(np.array(A["link_counts"]), np.array(B["link_counts"])),
+            "retrieval_mrr": compare_means(A["rr"], B["rr"]),
+            "scq": compare_means(A["scq"], B["scq"]),
+        }
+        c = comparisons[f"{b_cfg}_minus_{a_cfg}"]
+        print(f"  {b_cfg}-{a_cfg}: F1 {c['grounding_f1_seed42']['difference']:+.4f} "
+              f"[{c['grounding_f1_seed42']['ci95_low']:+.4f},{c['grounding_f1_seed42']['ci95_high']:+.4f}]  "
+              f"MRR {c['retrieval_mrr']['difference']:+.4f} [{c['retrieval_mrr']['ci95_low']:+.4f},"
+              f"{c['retrieval_mrr']['ci95_high']:+.4f}]  SCQ {c['scq']['difference']:+.4f} "
+              f"[{c['scq']['ci95_low']:+.4f},{c['scq']['ci95_high']:+.4f}]")
+    report["paired_bootstrap"] = {"method": "paired bootstrap over test figures, 10000 resamples, 95% percentile CI",
+                                  "comparisons": comparisons}
+    report["per_figure"] = {"figure_ids": [f["figure_id"] for f in test_figs], **per_item}
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w") as f:

@@ -55,6 +55,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--benchmark", default="data/benchmark")
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--alignment-seeds", type=int, nargs="+", default=[42, 43, 44])
     ap.add_argument("--classifier-epochs", type=int, default=25)
     ap.add_argument("--alignment-epochs", type=int, default=60)
     ap.add_argument("--out", default="results/phase4_results.json")
@@ -91,12 +92,28 @@ def main():
     torch.manual_seed(a.seed)
     untrained = CrossModal3DAligner()
     base = evaluate_alignment(untrained, root, test)
-    aligner, al_train = train_alignment(root, train, epochs=a.alignment_epochs, seed=a.seed, augment_rotation=best_aug)
-    save_checkpoint(aligner, al_train, "models/checkpoints/cross_modal_3d.pt")
-    al_test = evaluate_alignment(aligner, root, test)
-    for k, v in al_test["results"].items():
-        print(f"  {k:<20} R@1={v['recall@1']} R@5={v['recall@5']} MRR={v['mrr']}  "
-              f"(untrained R@1={base['results'][k]['recall@1']}, chance={al_test['chance_recall@1']})")
+    # Final model trained with several seeds: single CPU runs vary a lot (e.g. PointNet R@1 0.13 vs
+    # 0.22 for the same seed under different thread counts), so mean +- std is reported. The first
+    # seed's model is saved as the checkpoint used by the API and the ablation.
+    seed_runs, seed_train = [], []
+    for i, seed in enumerate(a.alignment_seeds):
+        aligner, al_train = train_alignment(root, train, epochs=a.alignment_epochs, seed=seed, augment_rotation=best_aug)
+        if i == 0:
+            save_checkpoint(aligner, al_train, "models/checkpoints/cross_modal_3d.pt")
+            al_test = evaluate_alignment(aligner, root, test)
+            seed_runs.append(al_test["results"])
+        else:
+            seed_runs.append(evaluate_alignment(aligner, root, test)["results"])
+        seed_train.append(al_train["train_time_s"])
+    al_summary = {}
+    for enc in seed_runs[0]:
+        al_summary[enc] = {m: {"mean": round(float(np.mean([r[enc][m] for r in seed_runs])), 4),
+                               "std": round(float(np.std([r[enc][m] for r in seed_runs])), 4)}
+                           for m in seed_runs[0][enc]}
+        v = al_summary[enc]
+        print(f"  {enc:<20} R@1={v['recall@1']['mean']}±{v['recall@1']['std']} "
+              f"R@5={v['recall@5']['mean']} MRR={v['mrr']['mean']}±{v['mrr']['std']}  "
+              f"(untrained R@1={base['results'][enc]['recall@1']}, chance={al_test['chance_recall@1']})")
 
     report = {
         "benchmark": {"name": meta["dataset_name"], "version": meta["version"], "path": root,
@@ -116,7 +133,10 @@ def main():
             "model_selection_on_validation": {"val_molecules": sorted(VAL_MOLECULES), "num_fit": len(fit),
                                               "num_val": len(val), "criterion": "val MRR (pointnet+multiview)",
                                               "candidates": selection, "selected_rotation_augmentation": best_aug},
-            "training": al_train, "test_trained": al_test, "test_untrained_baseline": base},
+            "training": al_train, "seeds": a.alignment_seeds,
+            "train_time_s_per_seed": seed_train,
+            "test_trained_mean_std": al_summary, "test_trained_per_seed": seed_runs,
+            "test_trained": al_test, "test_untrained_baseline": base},
         "caveats": [
             "SciFig-Controlled is synthetic (matplotlib renders); in-domain accuracy does not transfer to real paper figures.",
             "Protein test structures are disjoint from training structures; surfaces and 3D scatters are new random instances of the same parametric families.",

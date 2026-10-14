@@ -167,3 +167,20 @@ def test_no_hardcoded_metric_offsets_in_evaluation_scripts():
 
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
+
+
+# ---------------------------------------------------------------- statistics
+def test_paired_bootstrap():
+    from src.evaluation.bootstrap import compare_means, compare_micro_f1
+    rng = np.random.default_rng(0)
+    a = rng.random(200)
+    same = compare_means(a, a.copy(), n_resamples=2000)
+    assert same["difference"] == 0.0 and not same["significant_at_0.05"]
+    better = compare_means(a, a + 0.1, n_resamples=2000)
+    assert better["significant_at_0.05"] and better["ci95_low"] > 0
+    noisy = compare_means(a, a + rng.normal(0, 0.3, 200), n_resamples=2000)
+    assert noisy["ci95_low"] < 0 < noisy["ci95_high"]
+    ca = np.array([[1, 1, 1]] * 50)
+    cb = np.array([[2, 0, 0]] * 50)
+    r = compare_micro_f1(ca, cb, n_resamples=500)
+    assert r["difference"] == pytest.approx(1.0 - 0.5) and r["significant_at_0.05"]
