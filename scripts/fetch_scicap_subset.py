@@ -73,17 +73,78 @@ def inspect():
 
 def split_rank(name):
     n = name.lower()
-    for i, s in enumerate(("test", "val", "dev", "train")):
+    if "hidden" in n:  # hidden test split has no captions
+        return 99
+    for i, s in enumerate(("val", "dev", "test", "train")):
         if s in n:
             return i
     return 9
+
+
+def split_of(name):
+    """'val-metadata.json' -> 'val'; 'val.json' -> 'val'."""
+    return re.sub(r"(-metadata)?\.(json|jsonl|parquet)$", "", os.path.basename(name).lower())
+
+
+def _json_records(path):
+    with open(path) as fh:
+        obj = json.load(fh)
+    if isinstance(obj, list):
+        return [r for r in obj if isinstance(r, dict)]
+    if isinstance(obj, dict):
+        if isinstance(obj.get("annotations"), list):  # COCO style
+            imgs = {i.get("id"): i for i in obj.get("images", []) if isinstance(i, dict)}
+            return [{**imgs.get(a.get("image_id"), {}), **a} for a in obj["annotations"] if isinstance(a, dict)]
+        if isinstance(obj.get("images"), list):
+            return [r for r in obj["images"] if isinstance(r, dict)]
+        return [{"id": k, **v} if isinstance(v, dict) else {"id": k, "value": v} for k, v in obj.items()]
+    return []
+
+
+def _join_key(rec):
+    for k in ("image_id", "id", "figure_id", "file_name", "image_file"):
+        if rec.get(k) not in (None, ""):
+            return os.path.splitext(os.path.basename(str(rec[k])))[0]
+    return None
+
+
+def iter_merged_json(files, max_records):
+    """Merge every json file of the best split (e.g. val.json + val-metadata.json) on the image id."""
+    from huggingface_hub import hf_hub_download
+    jsons = [(n, s) for n, s in files if n.lower().endswith(".json") and split_rank(n) < 99]
+    if not jsons:
+        return
+    best = min(split_rank(n) for n, _ in jsons)
+    split = split_of(min((n for n, _ in jsons if split_rank(n) == best), key=len))
+    group = [(n, s) for n, s in jsons if split_of(n) == split]
+    merged = {}
+    for name, size in sorted(group, key=lambda x: x[1]):
+        if size > 2e9:
+            print(f"  skipping {name}: too large")
+            continue
+        print(f"reading {name} ({size / 1e6:.1f} MB)")
+        for rec in _json_records(hf_hub_download(REPO, name, repo_type="dataset")):
+            k = _join_key(rec)
+            if k is None:
+                continue
+            merged.setdefault(k, {}).update(rec)
+    print(f"merged {len(merged)} records from split '{split}' ({', '.join(n for n, _ in group)})")
+    for i, (k, rec) in enumerate(merged.items()):
+        if i >= max_records:
+            return
+        yield f"{split} ({', '.join(n for n, _ in group)})", rec
 
 
 def iter_records(files, max_records):
     """Yield (source_file, record dict) from the smallest test/val data file(s)."""
     from huggingface_hub import HfFileSystem, hf_hub_download
     fs = HfFileSystem()
-    data = [(n, s) for n, s in files if re.search(r"\.(parquet|jsonl|json)$", n) and "readme" not in n.lower()]
+    if any(n.lower().endswith(".json") and split_rank(n) < 99 for n, _ in files) and \
+            not any(n.lower().endswith((".parquet", ".jsonl")) for n, _ in files):
+        yield from iter_merged_json(files, max_records)
+        return
+    data = [(n, s) for n, s in files if re.search(r"\.(parquet|jsonl|json)$", n)
+            and "readme" not in n.lower() and split_rank(n) < 99]
     data.sort(key=lambda x: (split_rank(x[0]), x[1]))
     if not data:
         sys.exit("No parquet/json/jsonl files found - run with --inspect and send the listing.")
@@ -200,7 +261,18 @@ def fetch(n, out):
         if raw_img is None:
             misses += 1
             if misses > 20 and not records:
-                sys.exit("Could not locate images for the first records - run --inspect and send the listing.")
+                print("\nCould not locate images. Diagnostics (please paste all of this):")
+                print("  first record:", json.dumps({k: (str(v)[:120]) for k, v in rec.items()}, indent=1))
+                other = [f"{n} ({sz / 1e6:.0f} MB)" for n, sz in files if not n.lower().endswith(".json")]
+                print("  non-json repo files:", other[:40])
+                for z in zips.zips[:2]:
+                    from huggingface_hub import HfFileSystem
+                    try:
+                        zf = zipfile.ZipFile(HfFileSystem().open(f"datasets/{REPO}/{z}", "rb"))
+                        print(f"  first members of {z}:", zf.namelist()[:5])
+                    except Exception as e:
+                        print(f"  could not open {z}: {e}")
+                sys.exit(1)
             continue
         try:
             im = Image.open(io.BytesIO(raw_img)).convert("RGB")
