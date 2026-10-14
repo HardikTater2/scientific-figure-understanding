@@ -365,67 +365,83 @@ def image_bytes(rec, files_set, zips):
     return zips.read(ref)
 
 
-def fetch(n, out):
-    from PIL import Image
-    files = list_files()
-    files_set = [f for f, _ in files]
-    zips = ZipImageIndex(files)
-    os.makedirs(os.path.join(out, "images"), exist_ok=True)
-    records, misses = [], 0
-    for src, rec in iter_records(files, max_records=n * 3):
-        if len(records) >= n:
-            break
-        fid = re.sub(r"[^A-Za-z0-9_.-]", "_", str(pick(rec, ID_KEYS) or f"rec{len(records)}"))
-        fid = os.path.splitext(fid)[0]
-        raw_img = image_bytes(rec, files_set, zips)
-        if raw_img is None:
-            misses += 1
-            if misses > 20 and not records:
-                print("\nCould not locate images. Diagnostics (please paste all of this):")
-                print("  first record:", json.dumps({k: (str(v)[:120]) for k, v in rec.items()}, indent=1))
-                other = [f"{n} ({sz / 1e6:.0f} MB)" for n, sz in files if not n.lower().endswith(".json")]
-                print("  non-json repo files:", other[:40])
-                for z in zips.zips[:2]:
-                    from huggingface_hub import HfFileSystem
-                    try:
-                        zf = zipfile.ZipFile(HfFileSystem().open(f"datasets/{REPO}/{z}", "rb"))
-                        print(f"  first members of {z}:", zf.namelist()[:5])
-                    except Exception as e:
-                        print(f"  could not open {z}: {e}")
-                sys.exit(1)
-            continue
-        try:
-            im = Image.open(io.BytesIO(raw_img)).convert("RGB")
-        except Exception:
-            misses += 1
-            continue
-        if max(im.size) > 1024:  # keep the subset small
-            im.thumbnail((1024, 1024))
-        im.save(os.path.join(out, "images", f"{fid}.png"), optimize=True)
-        raw = {k: (v if not isinstance(v, (bytes, bytearray, dict)) or k != "image" else "<image>")
-               for k, v in rec.items()}
-        records.append({
-            "figure_id": fid,
-            "image_path": f"images/{fid}.png",
-            "caption": as_text(pick(rec, CAPTION_KEYS)),
-            "paragraph_text": as_text(pick(rec, PARAGRAPH_KEYS)),
-            "ocr_text": as_text(pick(rec, OCR_KEYS)),
-            "figure_type": as_text(pick(rec, TYPE_KEYS)) or "graph_plot",
-            "source_file": src,
-            "raw": json.loads(json.dumps(raw, default=str)),
-        })
-        print(f"  [{len(records)}/{n}] {fid}")
+def write_outputs(records, out, final=False):
     meta = {"dataset": REPO, "license": "CC BY-NC-SA 4.0 (SciCap, Hsu et al., 2021)",
-            "num_figures": len(records), "records": records}
-    with open(os.path.join(out, "metadata.json"), "w") as fh:
+            "num_figures": len(records), "complete": final, "records": records}
+    tmp = os.path.join(out, "metadata.json.tmp")
+    with open(tmp, "w") as fh:
         json.dump(meta, fh, indent=1)
+    os.replace(tmp, os.path.join(out, "metadata.json"))
     with open(os.path.join(out, "README.md"), "w") as fh:
         fh.write(f"# SciCap subset\n\n{len(records)} figures from `{REPO}` (HuggingFace), fetched with "
                  "`scripts/fetch_scicap_subset.py`.\n\nSciCap: Hsu, Giles, Huang. *SciCap: Generating Captions "
                  "for Scientific Figures*. Findings of EMNLP 2021. Licensed CC BY-NC-SA 4.0 "
                  "(non-commercial, share-alike, attribution).\n")
+
+
+def fetch(n, out):
+    """
+    Saves metadata every 25 figures and on exit (also after an error), skips one bad record instead
+    of stopping, and does not re-download images that already exist in ``out/images``.
+    """
+    from PIL import Image
+    files = list_files()
+    files_set = [f for f, _ in files]
+    zips = ZipImageIndex(files)
+    os.makedirs(os.path.join(out, "images"), exist_ok=True)
+    records, misses, errors = [], 0, 0
+    try:
+        for src, rec in iter_records(files, max_records=n * 3):
+            if len(records) >= n:
+                break
+            try:
+                rid = pick(rec, ID_KEYS)
+                fid = re.sub(r"[^A-Za-z0-9_.-]", "_", str(rid if rid is not None else f"rec{len(records)}"))
+                fid = os.path.splitext(fid)[0]
+                img_path = os.path.join(out, "images", f"{fid}.png")
+                if not os.path.exists(img_path):
+                    raw_img = image_bytes(rec, files_set, zips)
+                    if raw_img is None:
+                        misses += 1
+                        if misses > 20 and not records:
+                            print("\nCould not locate images. Diagnostics (please paste all of this):")
+                            print("  first record:", json.dumps({k: (str(v)[:120]) for k, v in rec.items()}, indent=1))
+                            other = [f"{nm} ({sz / 1e6:.0f} MB)" for nm, sz in files if not nm.lower().endswith(".json")]
+                            print("  non-json repo files:", other[:40])
+                            sys.exit(1)
+                        continue
+                    im = Image.open(io.BytesIO(raw_img)).convert("RGB")
+                    if max(im.size) > 1024:  # keep the subset small
+                        im.thumbnail((1024, 1024))
+                    im.save(img_path, optimize=True)
+                raw = {k: ("<image>" if k == "image" and isinstance(v, (bytes, bytearray, dict)) else v)
+                       for k, v in rec.items()}
+                records.append({
+                    "figure_id": fid,
+                    "image_path": f"images/{fid}.png",
+                    "caption": as_text(pick(rec, CAPTION_KEYS)),
+                    "paragraph_text": as_text(pick(rec, PARAGRAPH_KEYS)),
+                    "ocr_text": as_text(pick(rec, OCR_KEYS)),
+                    "figure_type": as_text(pick(rec, TYPE_KEYS)) or "graph_plot",
+                    "source_file": src,
+                    "raw": json.loads(json.dumps(raw, default=str)),
+                })
+                print(f"  [{len(records)}/{n}] {fid}")
+                if len(records) % 25 == 0:
+                    write_outputs(records, out)
+            except SystemExit:
+                raise
+            except Exception as e:
+                errors += 1
+                print(f"  skipped a record: {type(e).__name__}: {e}")
+                if errors > 50:
+                    print("  too many errors, stopping")
+                    break
+    finally:
+        if records:
+            write_outputs(records, out, final=len(records) >= n)
     size = sum(os.path.getsize(os.path.join(out, "images", f)) for f in os.listdir(os.path.join(out, "images")))
-    print(f"\nWrote {len(records)} figures ({size / 1e6:.1f} MB) to {out}")
+    print(f"\nWrote {len(records)} figures ({size / 1e6:.1f} MB) to {out}  (skipped records: {errors})")
     if records and not records[0]["caption"]:
         print("WARNING: no caption field recognised - the 'raw' entries keep the original fields.")
 
