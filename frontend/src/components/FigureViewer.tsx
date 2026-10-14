@@ -34,7 +34,8 @@ const LiveFigure: React.FC<{
 }> = ({ imageUrl, elements, dimensions, graphSummary, threedAnalysis, showOverlays, zoom, onSelectElement }) => {
   const textElements = elements.filter((e) => e.type !== 'CHART_REGION');
   const [selected, setSelected] = useState<FigureElement | null>(textElements[0] || null);
-  const scale = dimensions ? DISPLAY_WIDTH / dimensions.width : 1;
+  // Boxes are positioned in percent of the source image so they stay aligned at any rendered size.
+  const pct = (v: number, total: number) => `${(100 * v) / total}%`;
   const labelOf = (id: string) => graphSummary?.nodes.find((n) => n.id === id)?.label ?? id.replace(/^ent:/, '');
   const links = selected
     ? (graphSummary?.edges ?? []).filter((e) => e.source === `elem:${selected.id}` && e.target.startsWith('ent:'))
@@ -44,8 +45,8 @@ const LiveFigure: React.FC<{
   return (
     <>
       <div className="relative flex-1 bg-slate-950/90 rounded-lg overflow-auto flex items-center justify-center p-4 min-h-[340px]">
-        <div className="relative transition-transform duration-200" style={{ transform: `scale(${zoom})`, width: DISPLAY_WIDTH }}>
-          <img src={imageUrl} alt="Analysed figure" width={DISPLAY_WIDTH} className="rounded border border-slate-800 bg-white block" />
+        <div className="relative transition-transform duration-200 w-full" style={{ transform: `scale(${zoom})`, maxWidth: DISPLAY_WIDTH }}>
+          <img src={imageUrl} alt="Analysed figure" className="w-full h-auto rounded bg-white block" />
           {showOverlays && dimensions && elements.map((el) => {
             if (!el.bbox || el.bbox.length < 4) return null;
             const [x0, y0, x1, y1] = el.bbox;
@@ -59,7 +60,8 @@ const LiveFigure: React.FC<{
                 onClick={clickable ? () => { setSelected(el); onSelectElement?.(el); } : undefined}
                 className={clickable ? 'absolute cursor-pointer' : 'absolute pointer-events-none'}
                 style={{
-                  left: x0 * scale, top: y0 * scale, width: (x1 - x0) * scale, height: (y1 - y0) * scale,
+                  left: pct(x0, dimensions.width), top: pct(y0, dimensions.height),
+                  width: pct(x1 - x0, dimensions.width), height: pct(y1 - y0, dimensions.height),
                   border: `1.5px ${clickable ? 'solid' : 'dashed'} ${color}`,
                   background: isSel ? `${color}40` : clickable ? `${color}14` : 'transparent',
                 }}
