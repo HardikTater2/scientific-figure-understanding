@@ -184,3 +184,12 @@ def test_paired_bootstrap():
     cb = np.array([[2, 0, 0]] * 50)
     r = compare_micro_f1(ca, cb, n_resamples=500)
     assert r["difference"] == pytest.approx(1.0 - 0.5) and r["significant_at_0.05"]
+
+
+def test_caption_metrics():
+    from pipelines.evaluate_scicap import bleu4, rouge_l
+    ref = "Top-1 accuracy of ResNet and ViT on ImageNet across epochs"
+    assert bleu4(ref, ref) == pytest.approx(1.0)
+    assert rouge_l(ref, ref) == pytest.approx(1.0)
+    assert rouge_l("completely unrelated words", ref) == 0.0
+    assert 0 < bleu4("accuracy of ResNet on ImageNet", ref) < 1
