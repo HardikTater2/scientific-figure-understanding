@@ -143,6 +143,8 @@ def run_end_to_end_pipeline(paper_path: str, figure_path: str, query: str, confi
     output_summary = {
         "paper_id": doc_structure["paper_id"],
         "figure_id": figure_elements["figure_id"],
+        "figure_path": figure_path,
+        "document_structure": doc_structure,
         "query": query,
         "extracted_entities": entities,
         "retrieved_context": retrieved_context,

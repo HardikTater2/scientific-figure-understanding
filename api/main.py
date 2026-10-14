@@ -5,6 +5,7 @@ and Phase 4 3D Visualization Branch (PointNet + Multi-View + Multimodal Retrieve
 """
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Body
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
@@ -194,3 +195,20 @@ def benchmark_results():
         path = os.path.join("results", f"{name}.json")
         out[name] = json.load(open(path)) if os.path.exists(path) else None
     return out
+
+
+# Figure images the UI may display. Only files under these directories are served.
+_IMAGE_ROOTS = [os.path.realpath(p) for p in ("demo", os.path.join("data", "benchmark", "images"))]
+_IMAGE_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg"}
+
+
+@app.get("/figure-image")
+def figure_image(path: str):
+    """Serves a figure image from the demo / benchmark directories (used by the analysis view)."""
+    real = os.path.realpath(path)
+    ext = os.path.splitext(real)[1].lower()
+    if ext not in _IMAGE_TYPES or not any(real.startswith(root + os.sep) for root in _IMAGE_ROOTS):
+        raise HTTPException(status_code=403, detail="Path not allowed")
+    if not os.path.isfile(real):
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(real, media_type=_IMAGE_TYPES[ext])

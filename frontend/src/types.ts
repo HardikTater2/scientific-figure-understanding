@@ -97,6 +97,9 @@ export interface GraphEdge {
   source: string;
   target: string;
   relation: string;
+  /** "gnn" on links predicted by the supervised GNN */
+  link_source?: string;
+  gnn_grounding_score?: number;
 }
 
 export interface GroundingGraphSummary {
@@ -162,6 +165,10 @@ export interface PipelineResult {
   scq_evaluation: SCQEvaluation;
   "3d_branch_analysis"?: ThreeDBranchAnalysis;
   status_declarations: Record<string, string>;
+  /** path of the analysed figure; served by GET /figure-image */
+  figure_path?: string;
+  /** document hierarchy the pipeline actually used */
+  document_structure?: DocumentStructure;
   /** true when the UI is showing built-in demo data instead of a backend result */
   is_mock_data?: boolean;
 }

@@ -96,3 +96,13 @@ if __name__ == "__main__":
     test_entity_grounding_graph()
     test_hallucination_checker()
     print("\nALL BACKEND UNIT TESTS PASSED!")
+
+
+def test_api_figure_image_endpoint_restricts_paths():
+    from fastapi.testclient import TestClient
+    from api.main import app
+    c = TestClient(app)
+    assert c.get("/figure-image", params={"path": "demo/sample_figure.png"}).status_code == 200
+    assert c.get("/figure-image", params={"path": "config/config.yaml"}).status_code == 403
+    assert c.get("/figure-image", params={"path": "demo/../config/config.yaml"}).status_code == 403
+    assert c.get("/figure-image", params={"path": "/etc/passwd"}).status_code == 403

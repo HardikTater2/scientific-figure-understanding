@@ -127,7 +127,7 @@ class EntityGroundingGraph:
         ntype = {e["text"]: e["type"] for e in entities}
         for eid, ent in links:
             self.graph.add_edge(f"elem:{eid}", f"ent:{ent}", relation=_relation_for(etype.get(eid), ntype.get(ent)),
-                                source="gnn", gnn_grounding_score=round(score_of[(eid, ent)], 4))
+                                link_source="gnn", gnn_grounding_score=round(score_of[(eid, ent)], 4))
         self.gnn_metrics = {
             "mode": "supervised",
             "checkpoint": self.checkpoint_path,
