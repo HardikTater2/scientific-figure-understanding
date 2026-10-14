@@ -25,7 +25,7 @@ in the current environment).
 | Claim verification | PROTOTYPE | Lexical support + numeric-conflict check; NLI cross-encoder is used automatically if it can be loaded (it cannot here). CONTRADICTED now means a concrete numeric conflict, not low overlap. |
 | SCQ metric | IMPLEMENTED | Formula unchanged; all four inputs are now computed (previously constants 0.82 / 0.85 were used). |
 | Phase 2 — CLIP | **BLOCKED** | `src/models/vision/clip_encoder.py` implemented, but `openai/clip-vit-base-patch32` cannot be downloaded (huggingface.co unreachable). Configuration **C** not run. |
-| Phase 4 — 3D detection | IMPLEMENTED (in-domain) | CNN on pixels (+ text cues reported separately). The previous detector used the file name. §3.3. |
+| Phase 4 — 3D detection | IMPLEMENTED (with caveat) | CNN on pixels + text cues; default "agreement" mode when text is available (3D only if both agree). Image-only CNN fails on real figures (92.7% false positives on SciCap). §3.3, §3.6. |
 | Phase 4 — point-cloud encoder | IMPLEMENTED (in-domain) | Vanilla PointNet trained contrastively against figure images. §3.4. |
 | Phase 4 — multi-view | IMPLEMENTED (in-domain) | Orthographic multi-view rendering of geometry (occupancy / near / far depth) + shared CNN. The old crop-of-a-2D-image path is kept and labelled as such. |
 | Phase 4 — 3D in graph / GNN | IMPLEMENTED | FIGURE_3D node with the image→3D-aligned embedding, only for figures detected as 3D. Configuration **D**. |
@@ -43,7 +43,10 @@ in the current environment).
 * **demo/dataset**: four synthetic placeholders for the UI (relabelled; previously presented as
   SciCap). `alphafold_t1087_3d.json` is a synthetic helix (relabelled; previously attributed to
   AlphaFold).
-* **Real SciCap / arXiv / AlphaFold DB / RCSB**: not reachable from the build environment.
+* **SciCap subset** (`data/scicap_subset`): 287 real arXiv graph plots (val split, 1 unreadable image
+  skipped) with author captions and PDF-extracted paragraphs, CC BY-NC-SA 4.0. Fetched on a local
+  machine with `scripts/fetch_scicap_subset.py` because HuggingFace is blocked in the build environment.
+* **arXiv / AlphaFold DB / RCSB**: not reachable from the build environment.
 
 Answers to the Phase-4 data questions: the repository contained no real SciCap data and no real
 3D geometry; the real SciCap is graph plots only. No public dataset pairing paper figures with
@@ -171,6 +174,47 @@ value is a **new capability**: retrieving the figure that depicts a given 3D str
 (geometry→figure R@1 0.09 in this run, chance ≈ 0.02; see §3.4 for the multi-seed alignment numbers),
 which no 2D/text configuration can do.
 
+### 3.6 Real figures: SciCap subset — `pipelines/evaluate_scicap.py` → `results/scicap_results.json`
+
+287 real arXiv graph plots. No grounding labels exist, so grounding accuracy is **not measured**.
+Entities come from the regex NER.
+
+**Caption leakage.** SciCap's PDF-extracted paragraphs often contain the caption itself (35 of 288
+verbatim; 69% mean token overlap). Caption text, "Figure N:" labels and sentences sharing ≥ 60% of
+the caption's tokens are removed before retrieval and verification. Without this, text-only MRR
+would be 0.945 instead of 0.897.
+
+| Caption → figure retrieval (gallery 287) | R@1 | R@5 | MRR | vs text-only (paired bootstrap) |
+|---|---:|---:|---:|---|
+| text (paragraph) only | 0.875 | 0.920 | 0.897 | – |
+| text + OCR | 0.899 | 0.937 | 0.919 | +0.021 [+0.003, +0.041] ✱ |
+| text + GNN-grounded entities | 0.875 | 0.927 | 0.898 | +0.000 [−0.005, +0.006] |
+| text + OCR + grounded | 0.899 | 0.937 | 0.918 | +0.021 [+0.003, +0.039] ✱ |
+| OCR only | 0.477 | 0.568 | 0.521 | −0.376 [−0.435, −0.319] ✱ |
+
+| Other measurements | Value |
+|---|---|
+| OCR text elements per figure (mean) / figures with none | 9.14 / 19 |
+| OCR latency, uncached (median) | 2843 ms |
+| Regex NER: entities per figure / figures with none | 2.05 / 130 of 287 |
+| GNN-grounded links per figure | 0.25 |
+| Generated vs author caption: BLEU-4 / ROUGE-L | 0.051 / 0.084 |
+| Technical correctness (lexical verifier) | 0.264 |
+| SCQ | 0.295 ± 0.162 |
+
+**3D detector on real figures** (`pipelines/evaluate_3d_detector_modes.py` →
+`results/threed_detector_modes.json`):
+
+| Mode | SciFig-Controlled test accuracy | SciCap false-positive rate (all are 2D) |
+|---|---:|---:|
+| image (CNN only) | 1.000 | **0.927** |
+| text cues only | 1.000 | 0.024 |
+| agreement (default with text) | 1.000 | 0.024 |
+
+The CNN learned the style of the synthetic renders and does not transfer. The 7 remaining text-cue
+false positives are 2D plots whose surrounding paper text mentions "3D", "molecular" or "mesh".
+No real 3D figures were available, so 3D recall on real figures is unmeasured.
+
 ## 4. Reproduction
 
 ```bash
@@ -178,6 +222,8 @@ python -m src.data.benchmark_generator --out data/benchmark --seed 42
 python pipelines/evaluate_phase4.py        # ~4-15 min CPU
 python pipelines/evaluate_gnn.py           # ~10 min CPU incl. OCR on first run (~14 min)
 python pipelines/run_ablation.py           # ~15 min CPU
+python pipelines/evaluate_scicap.py        # real SciCap subset, ~15 min CPU (OCR)
+python pipelines/evaluate_3d_detector_modes.py
 python -m pytest tests/                    # 34 tests (1 skipped without checkpoints)
 ```
 
@@ -195,8 +241,9 @@ semantics). Frontend: `npm run build` — 0 errors.
 
 ## 6. Limitations
 
-* All quantitative results are on a synthetic, single-style benchmark with template text; they do
-  not establish performance on real scientific papers.
+* Grounding, 3D and ablation results are on a synthetic, single-style benchmark with template text.
+  On real SciCap figures only retrieval, OCR coverage, caption overlap and 3D false positives are
+  measured; real-figure grounding and real 3D figures remain unevaluated.
 * Grounding uses gold entities (oracle NER); the regex NER does not cover the benchmark vocabulary.
 * No pretrained vision or language models could be downloaded: no CLIP, no Sentence-Transformers,
   no SciBERT, no NLI. Retrieval uses TF-IDF; verification is lexical.
@@ -211,8 +258,8 @@ semantics). Frontend: `npm run build` — 0 errors.
 
 ## 8. Next steps
 
-1. With network access: real SciCap subset + hand-annotated element→entity links (≥ 100 figures);
-   re-run §3.1–3.5 on it.
+1. Hand-annotate element→entity links on ≥ 100 SciCap figures (subset now available) to measure
+   grounding on real data.
 2. Enable CLIP (configuration C) and Sentence-Transformers retrieval; NLI verification.
 3. Replace message passing with something the data can reward (e.g. cross-figure entity graphs),
    or drop it — the diagnostic shows it currently adds nothing.

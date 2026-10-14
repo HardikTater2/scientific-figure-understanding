@@ -6,6 +6,7 @@ graph-based entity grounding (NetworkX + PyTorch Geometric GNN), 3D-figure detec
 figure ↔ 3D-geometry alignment, grounded caption generation, claim verification and the SCQ
 composite metric.
 
+**What is done / not done (plain-language summary): [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).**
 **Per-component status, measured results and limitations: [`implementation_plan.md`](implementation_plan.md).**
 The 2026-10-08 audit that preceded the current results is in [`docs/AUDIT.md`](docs/AUDIT.md);
 results reported before that audit were not measurements and have been removed.
