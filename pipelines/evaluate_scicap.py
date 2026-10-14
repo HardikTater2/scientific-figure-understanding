@@ -88,6 +88,24 @@ def rouge_l(hyp: str, ref: str) -> float:
     return 2 * p * rec / (p + rec)
 
 
+def strip_caption(paragraph: str, caption: str) -> str:
+    """
+    Remove caption leakage from SciCap's PDF-extracted paragraph text: the verbatim caption,
+    "Figure N:" caption labels, and any sentence sharing >= 60% of the caption's tokens.
+    """
+    text = paragraph.replace(caption, " ")
+    # caption labels such as "Figure 3:" / "Fig. 3:" (in-text references like "in Figure 3," stay)
+    text = re.sub(r"\b(Figure|Fig\.?)\s*\d+[a-z]?\s*:\s*", " ", text)
+    cap = set(_toks(caption))
+    kept = []
+    for sent in re.split(r"(?<=[.!?])\s+", text):
+        st = set(_toks(sent))
+        if cap and st and len(st & cap) / len(cap) >= 0.6:
+            continue
+        kept.append(sent)
+    return " ".join(kept).strip()
+
+
 def ranks_for(retriever, queries, cands) -> np.ndarray:
     ranks = []
     for gold_id, q in queries:
@@ -109,7 +127,18 @@ def main():
     a = ap.parse_args()
 
     meta = json.load(open(os.path.join(a.subset, "metadata.json")))
-    recs = [r for r in meta["records"] if r.get("caption")]
+    from PIL import Image
+    recs, unreadable = [], []
+    for r in meta["records"]:
+        if not r.get("caption"):
+            continue
+        try:
+            Image.open(os.path.join(a.subset, r["image_path"])).verify()
+            recs.append(r)
+        except Exception:
+            unreadable.append(r["figure_id"])
+    if unreadable:
+        print(f"skipping {len(unreadable)} unreadable image(s): {unreadable}")
     if a.limit:
         recs = recs[: a.limit]
     if len(recs) < 10:
@@ -133,7 +162,8 @@ def main():
         fig = processor.process_figure(path)
         t_ocr.append((time.perf_counter() - t0) * 1000)
         text_elems = [e for e in fig["elements"] if e["type"] != "CHART_REGION"]
-        para = r.get("paragraph_text") or ""
+        para_raw = r.get("paragraph_text") or ""
+        para = strip_caption(para_raw, r["caption"])
         ents = ner.extract_entities(para)
         rels = ner.extract_relations(ents, para)
         t0 = time.perf_counter()
@@ -142,11 +172,11 @@ def main():
         t_ground.append((time.perf_counter() - t0) * 1000)
         grounded = [e["target"][4:] for e in summary["edges"]
                     if e["source"].startswith("elem:") and e["target"].startswith("ent:")]
-        det = detector.detect_3d_content(path)
+        det = detector.detect_3d_content(path, mode="image")
         ctx = {"level_results": {"paragraph": [{"text": para}], "section": [{"text": ""}]}}
         cap = captioner.generate_caption(fig, ctx, ents, summary)["generated_caption"]
         ver = verifier.verify_caption(cap, [{"text": para + " " + r.get("ocr_text", "")}])
-        rows.append({"figure_id": r["figure_id"], "paragraph": para,
+        rows.append({"figure_id": r["figure_id"], "paragraph": para, "paragraph_raw": para_raw,
                      "ocr": " ".join(e["text"] for e in text_elems), "grounded": " ".join(grounded),
                      "n_text_elements": len(text_elems), "n_entities": len(ents), "n_grounded": len(grounded),
                      "is_3d_pred": det["is_3d"], "generated_caption": cap, "caption": r["caption"],
@@ -156,6 +186,14 @@ def main():
             ocr.save_cache()
             print(f"  {i}/{len(recs)}")
     ocr.save_cache()
+
+    # OCR latency on figures NOT in the cache (the loop above mostly hits the cache)
+    fresh = OCREngine()
+    t_fresh = []
+    for x in recs[:10]:
+        t0 = time.perf_counter()
+        fresh.read(os.path.join(a.subset, x["image_path"]))
+        t_fresh.append((time.perf_counter() - t0) * 1000)
 
     # ---- retrieval: caption -> figure --------------------------------------
     tfidf = TfidfVectorizer(ngram_range=(1, 2), sublinear_tf=True).fit(
@@ -177,6 +215,10 @@ def main():
         retrieval[name] = summarize(ranks)
         rr[name] = (1 / ranks).tolist()
         print(f"  retrieval {name:<20} {retrieval[name]}")
+    # Same text-only retrieval on the RAW paragraph (caption leakage not removed), for reference
+    cands_raw = [dict(c, text_embedding=vec(x["paragraph_raw"])) for c, x in zip(cands, rows)]
+    leak = summarize(ranks_for(MultimodalRetriever(weights={"w_text": 1.0}), queries, cands_raw))
+    print(f"  retrieval text_only on RAW paragraph (leaky) {leak}")
     sig = {f"{n}_vs_text_only": compare_means(rr["text_only"], rr[n]) for n in configs if n != "text_only"}
 
     scq = [verifier.compute_scq_metric(
@@ -189,12 +231,14 @@ def main():
     n = len(rows)
     report = {
         "dataset": {"name": meta.get("dataset"), "license": meta.get("license"), "num_figures": n,
-                    "source": "SciCap val split subset (real arXiv graph plots, author captions)"},
+                    "source": "SciCap val split subset (real arXiv graph plots, author captions)",
+                    "skipped_unreadable_images": unreadable},
         "hardware": {"platform": platform.platform(), "torch": torch.__version__, "device": "cpu"},
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "ocr": {"mean_text_elements_per_figure": round(float(np.mean([x["n_text_elements"] for x in rows])), 2),
                 "figures_with_no_text_detected": int(sum(x["n_text_elements"] == 0 for x in rows)),
-                "latency_ms_median": round(float(np.median(t_ocr)), 1)},
+                "latency_ms_median_uncached": round(float(np.median(t_fresh)), 1),
+                "note": "3D detection for this dataset is reported per mode in results/threed_detector_modes.json"},
         "ner_and_grounding": {"mean_regex_entities_per_figure": round(float(np.mean([x["n_entities"] for x in rows])), 2),
                               "figures_with_no_entities": int(sum(x["n_entities"] == 0 for x in rows)),
                               "mean_grounded_links_per_figure": round(float(np.mean([x["n_grounded"] for x in rows])), 2),
@@ -202,8 +246,12 @@ def main():
                               "latency_ms_median": round(float(np.median(t_ground)), 2),
                               "note": "No grounding labels in SciCap - link accuracy cannot be measured."},
         "threed_detector_out_of_domain": {
-            "method": "image_classifier" if detector.model is not None else "text_cues_only",
+            "mode": "image (pixels only)",
             "false_positive_rate_on_graph_plots": round(float(np.mean([x["is_3d_pred"] for x in rows])), 4)},
+        "leakage_check": {
+            "paragraphs_containing_caption_verbatim": int(sum(x["caption"][:60].lower() in x["paragraph_raw"].lower() for x in rows)),
+            "mitigation": "caption text, 'Figure N:' labels and sentences sharing >=60% of caption tokens removed from the paragraph before retrieval and verification",
+            "text_only_retrieval_on_raw_paragraph_LEAKY": leak},
         "retrieval_caption_to_figure": {"gallery_size": n, "configs": retrieval,
                                         "paired_bootstrap_vs_text_only": sig},
         "caption_quality_vs_author_caption": {

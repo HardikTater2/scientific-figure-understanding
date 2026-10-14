@@ -193,3 +193,12 @@ def test_caption_metrics():
     assert rouge_l(ref, ref) == pytest.approx(1.0)
     assert rouge_l("completely unrelated words", ref) == 0.0
     assert 0 < bleu4("accuracy of ResNet on ImageNet", ref) < 1
+
+
+def test_strip_caption_removes_leakage():
+    from pipelines.evaluate_scicap import strip_caption
+    cap = "Accuracy of GCN on Cora across training epochs."
+    para = ("We train GCN on Cora. Figure 3: Accuracy of GCN on Cora across training epochs. "
+            "The model converges after 50 epochs.")
+    out = strip_caption(para, cap)
+    assert "Figure 3" not in out and "converges" in out and "We train GCN" in out
