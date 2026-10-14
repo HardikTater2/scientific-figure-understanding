@@ -1,29 +1,65 @@
 # Python
 __pycache__/
-*.pyc
-.venv/
-venv/
-env/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 *.egg-info/
-.pytest_cache/
+.installed.cfg
+*.egg
 
-# Node / frontend
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Testing & Linting
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Environment Variables & Secrets
+.env
+.env.local
+*.env
+
+# Frontend / Node
 node_modules/
 frontend/node_modules/
 frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
 
-# Secrets
-.env
-.env.*
-*.key
+# OS & Editor Files
+.DS_Store
+**/.DS_Store
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
 
-# Large artifacts (models, indexes, checkpoints)
+# Large Model weights and checkpoints (optional: keep .gitkeep)
 *.pt
 *.pth
-*.ckpt
 *.bin
+*.onnx
+*.ckpt
 *.faiss
 *.index
-
-# OS
-.DS_Store
+*.key
