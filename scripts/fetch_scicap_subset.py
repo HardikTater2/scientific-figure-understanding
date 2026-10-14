@@ -194,12 +194,119 @@ def iter_records(files, max_records):
             return
 
 
+class SpannedZip:
+    """
+    Minimal reader for split / spanned zip archives (name.z01, name.z02, ..., name.zip), which
+    Python's zipfile rejects ("zipfiles that span multiple disks are not supported").
+
+    The parts are treated as one virtual byte stream; the central directory is read from the end,
+    and each member is read with ranged reads, so only the needed bytes are transferred.
+    ``opener(name)`` must return a seekable binary file object for a part.
+    Supports ZIP64 and the stored / deflate compression methods.
+    """
+
+    def __init__(self, parts, sizes, opener):
+        self.parts, self.sizes, self.opener = parts, sizes, opener
+        self.starts = [sum(sizes[:i]) for i in range(len(parts))]
+        self._fh = {}
+        self.members = {}
+        self._read_central_directory()
+
+    def _read(self, pos, n):
+        """Read n bytes at a virtual offset, crossing part boundaries if needed."""
+        out = b""
+        while n > 0:
+            i = max(k for k, st in enumerate(self.starts) if st <= pos)
+            fh = self._fh.get(i) or self._fh.setdefault(i, self.opener(self.parts[i]))
+            off = pos - self.starts[i]
+            fh.seek(off)
+            chunk = fh.read(min(n, self.sizes[i] - off))
+            if not chunk:
+                raise IOError("unexpected end of archive part")
+            out += chunk
+            pos += len(chunk)
+            n -= len(chunk)
+        return out
+
+    def _virtual(self, disk, offset):
+        return self.starts[disk] + offset
+
+    def _read_central_directory(self):
+        import struct
+        total = sum(self.sizes)
+        tail_len = min(total, 1 << 16)
+        tail = self._read(total - tail_len, tail_len)
+        e = tail.rfind(b"PK\x05\x06")
+        if e < 0:
+            raise ValueError("end of central directory not found")
+        (_, disk_no, cd_disk, _, n_entries, cd_size, cd_off, _) = struct.unpack("<IHHHHIIH", tail[e:e + 22])
+        loc = tail.rfind(b"PK\x06\x07", 0, e)
+        if loc >= 0:  # ZIP64
+            _, z64_disk, z64_off, _ = struct.unpack("<IIQI", tail[loc:loc + 20])
+            z64 = self._read(self._virtual(z64_disk, z64_off), 56)
+            (_, _, _, _, _, cd_disk, _, n_entries, cd_size, cd_off) = struct.unpack("<IQHHIIQQQQ", z64)
+        cd = self._read(self._virtual(cd_disk, cd_off), cd_size)
+        p = 0
+        while p + 46 <= len(cd) and cd[p:p + 4] == b"PK\x01\x02":
+            (method, csize, usize, nlen, xlen, clen, dstart, loff) = (
+                struct.unpack("<H", cd[p + 10:p + 12])[0], *struct.unpack("<II", cd[p + 20:p + 28]),
+                *struct.unpack("<HHHH", cd[p + 28:p + 36]), struct.unpack("<I", cd[p + 42:p + 46])[0])
+            name = cd[p + 46:p + 46 + nlen].decode("utf-8", "replace")
+            extra = cd[p + 46 + nlen:p + 46 + nlen + xlen]
+            q = 0
+            while q + 4 <= len(extra):  # ZIP64 extended information
+                hid, hlen = struct.unpack("<HH", extra[q:q + 4])
+                if hid == 0x0001:
+                    vals, r = [], q + 4
+                    for flag in (usize == 0xFFFFFFFF, csize == 0xFFFFFFFF, loff == 0xFFFFFFFF):
+                        if flag:
+                            vals.append(struct.unpack("<Q", extra[r:r + 8])[0])
+                            r += 8
+                        else:
+                            vals.append(None)
+                    usize = vals[0] if vals[0] is not None else usize
+                    csize = vals[1] if vals[1] is not None else csize
+                    loff = vals[2] if vals[2] is not None else loff
+                    if dstart == 0xFFFF:
+                        dstart = struct.unpack("<I", extra[r:r + 4])[0]
+                q += 4 + hlen
+            self.members[name] = (method, csize, dstart, loff)
+            p += 46 + nlen + xlen + clen
+
+    def read(self, name):
+        import struct
+        import zlib
+        method, csize, disk, loff = self.members[name]
+        pos = self._virtual(disk, loff)
+        hdr = self._read(pos, 30)
+        nlen, xlen = struct.unpack("<HH", hdr[26:30])
+        data = self._read(pos + 30 + nlen + xlen, csize)
+        if method == 0:
+            return data
+        if method == 8:
+            return zlib.decompressobj(-15).decompress(data)
+        raise ValueError(f"unsupported compression method {method} for {name}")
+
+
+def find_spanned_parts(base_zip, files):
+    """'img-split.zip' -> (['img-split.z01', ..., 'img-split.zip'], sizes) if split parts exist."""
+    stem = base_zip[:-4]
+    parts = sorted([(n, s) for n, s in files if re.fullmatch(re.escape(stem) + r"\.z\d+", n)],
+                   key=lambda x: int(x[0].rsplit(".z", 1)[1]))
+    if not parts:
+        return None
+    sizes = dict(files)
+    names = [n for n, _ in parts] + [base_zip]
+    return names, [sizes[n] for n in names]
+
+
 class ZipImageIndex:
     """Random-access lookup of image members inside remote zip archives."""
 
     def __init__(self, files):
         from huggingface_hub import HfFileSystem
         self.fs = HfFileSystem()
+        self.files = files
         self.zips = sorted([n for n, _ in files if n.lower().endswith(".zip")], key=split_rank)
         self._index = None
 
@@ -207,8 +314,21 @@ class ZipImageIndex:
         self._index = {}
         for z in self.zips:
             print(f"indexing {z} (central directory only)")
-            zf = zipfile.ZipFile(self.fs.open(f"datasets/{REPO}/{z}", "rb"))
-            for member in zf.namelist():
+            spanned = find_spanned_parts(z, self.files)
+            try:
+                if spanned:
+                    names, sizes = spanned
+                    print(f"  spanned archive: {len(names)} parts")
+                    zf = SpannedZip(names, sizes, lambda n: self.fs.open(f"datasets/{REPO}/{n}", "rb"))
+                    members = list(zf.members)
+                else:
+                    zf = zipfile.ZipFile(self.fs.open(f"datasets/{REPO}/{z}", "rb"))
+                    members = zf.namelist()
+            except Exception as e:
+                print(f"  could not index {z}: {type(e).__name__}: {e}")
+                continue
+            print(f"  {len(members)} members")
+            for member in members:
                 base = os.path.basename(member)
                 if base:
                     self._index.setdefault(base, (zf, member))
