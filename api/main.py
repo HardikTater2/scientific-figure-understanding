@@ -12,6 +12,7 @@ from typing import Dict, Any, List, Optional
 import os
 import sys
 import shutil
+import time
 import numpy as np
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -187,6 +188,36 @@ def api_run_pipeline(req: QueryRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/upload-and-run")
+async def api_upload_and_run(
+    figure_file: UploadFile = File(...),
+    paper_file: Optional[UploadFile] = File(None),
+    query: str = Form("What does this figure show?")
+):
+    upload_dir = os.path.join("demo", "uploads")
+    os.makedirs(upload_dir, exist_ok=True)
+
+    safe_fig_name = f"{int(time.time())}_{os.path.basename(figure_file.filename or 'upload.png')}"
+    fig_dest = os.path.join(upload_dir, safe_fig_name)
+    with open(fig_dest, "wb") as buffer:
+        shutil.copyfileobj(figure_file.file, buffer)
+
+    paper_dest = ""
+    if paper_file and paper_file.filename:
+        safe_paper_name = f"{int(time.time())}_{os.path.basename(paper_file.filename)}"
+        paper_dest = os.path.join(upload_dir, safe_paper_name)
+        with open(paper_dest, "wb") as buffer:
+            shutil.copyfileobj(paper_file.file, buffer)
+
+    try:
+        res = run_end_to_end_pipeline(paper_dest, fig_dest, query)
+        res["figure_path"] = fig_dest
+        res["is_mock_data"] = False
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/benchmark/results")
 def benchmark_results():
     """Measured results files produced by the evaluation pipelines (empty entries if not yet run)."""
@@ -198,7 +229,8 @@ def benchmark_results():
 
 
 # Figure images the UI may display. Only files under these directories are served.
-_IMAGE_ROOTS = [os.path.realpath(p) for p in ("demo", os.path.join("data", "benchmark", "images"))]
+_IMAGE_ROOTS = [os.path.realpath(p) for p in ("demo", os.path.join("data", "benchmark", "images"), os.path.join("demo", "uploads"))]
+
 _IMAGE_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg"}
 
 

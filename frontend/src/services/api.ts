@@ -40,3 +40,31 @@ export async function checkBackendHealth(): Promise<boolean> {
     return false;
   }
 }
+
+export async function uploadAndRunPipeline(
+  figureFile: File,
+  paperFile: File | null,
+  query: string
+): Promise<PipelineResult> {
+  const formData = new FormData();
+  formData.append('figure_file', figureFile);
+  if (paperFile) {
+    formData.append('paper_file', paperFile);
+  }
+  formData.append('query', query);
+
+  const response = await fetch('/api/upload-and-run', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Pipeline run failed (${response.status}): ${errText}`);
+  }
+
+  const data = await response.json();
+  data.is_mock_data = false;
+  return data as PipelineResult;
+}
+

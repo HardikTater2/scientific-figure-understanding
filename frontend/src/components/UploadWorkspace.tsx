@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { FileText, Image as ImageIcon, Search, CheckCircle2, Loader2, ArrowRight, Sparkles, BookOpen, Layers } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, Image as ImageIcon, Search, CheckCircle2, Loader2, ArrowRight, Sparkles, BookOpen, Layers, X } from 'lucide-react';
 import type { PipelineResult } from '../types';
-import { runPipeline } from '../services/api';
+import { runPipeline, uploadAndRunPipeline } from '../services/api';
 
 interface UploadWorkspaceProps {
   onPipelineSuccess: (result: PipelineResult) => void;
@@ -10,10 +10,23 @@ interface UploadWorkspaceProps {
 export const UploadWorkspace: React.FC<UploadWorkspaceProps> = ({ onPipelineSuccess }) => {
   const [paperFile, setPaperFile] = useState<File | null>(null);
   const [figureFile, setFigureFile] = useState<File | null>(null);
-  const [selectedSciCapSample, setSelectedSciCapSample] = useState<string>('scicap_001');
+  const [figurePreview, setFigurePreview] = useState<string | null>(null);
+  const [selectedSciCapSample, setSelectedSciCapSample] = useState<string | null>('scicap_001');
   const [query, setQuery] = useState('What does this figure demonstrate regarding accuracy and training epochs?');
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStage, setCurrentStage] = useState(0);
+
+  useEffect(() => {
+    if (figureFile) {
+      const url = URL.createObjectURL(figureFile);
+      setFigurePreview(url);
+      setSelectedSciCapSample(null);
+      setQuery('Explain the components, labels, and workflow depicted in this figure.');
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setFigurePreview(null);
+    }
+  }, [figureFile]);
 
   const scicapPresetSamples = [
     { id: 'scicap_001', label: 'Demo 001: ResNet vs ViT Accuracy Placeholder (2D Plot)', query: 'What figure compares top-1 accuracy curves of ResNet-50 and ViT-Base on ImageNet?' },
@@ -23,15 +36,16 @@ export const UploadWorkspace: React.FC<UploadWorkspaceProps> = ({ onPipelineSucc
   ];
 
   const stages = [
-    'Loading SciCap dataset sample & parsing document hierarchy...',
-    'Extracting scientific named entities (regex NER)...',
-    'Building 4-level vector context index (FAISS)...',
-    'Processing figure layout & visual elements...',
-    'Constructing NetworkX entity grounding graph...',
-    'Generating grounded caption & comparing with the sample caption...'
+    'Reading input files & parsing document structure...',
+    'Running EasyOCR optical character recognition & element detection...',
+    'Extracting scientific named entities (NER)...',
+    'Building hierarchical vector context index...',
+    'Constructing NetworkX / PyG entity grounding graph...',
+    'Generating grounded caption & technical verification...'
   ];
 
   const handleSelectSciCap = (sampleId: string) => {
+    setFigureFile(null);
     setSelectedSciCapSample(sampleId);
     const found = scicapPresetSamples.find((s) => s.id === sampleId);
     if (found) {
@@ -45,23 +59,37 @@ export const UploadWorkspace: React.FC<UploadWorkspaceProps> = ({ onPipelineSucc
 
     for (let i = 0; i < stages.length; i++) {
       setCurrentStage(i);
-      await new Promise((r) => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 400));
     }
 
     try {
-      const res = await fetch(`/api/scicap/run-sample/${selectedSciCapSample}`, {
-        method: 'POST'
-      });
-      if (res.ok) {
-        const data = await res.json();
+      if (figureFile) {
+        // Real user-uploaded figure: upload to backend and run full EasyOCR & pipeline
+        const result = await uploadAndRunPipeline(figureFile, paperFile, query);
         setIsProcessing(false);
-        onPipelineSuccess(data);
+        onPipelineSuccess(result);
         return;
       }
+
+      if (selectedSciCapSample) {
+        // Run selected SciCap sample
+        const res = await fetch(`/api/scicap/run-sample/${selectedSciCapSample}`, {
+          method: 'POST'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          data.is_mock_data = false;
+          setIsProcessing(false);
+          onPipelineSuccess(data);
+          return;
+        }
+      }
     } catch (e) {
-      console.warn('Backend API call failed, falling back to local runner.', e);
+      console.error('Pipeline execution failed:', e);
+      alert('Error running pipeline on image: ' + (e as Error).message);
     }
 
+    // Fallback runner if network fails
     const res = await runPipeline(
       paperFile ? paperFile.name : 'demo/sample_paper.pdf',
       figureFile ? figureFile.name : 'demo/sample_figure.png',
@@ -71,6 +99,7 @@ export const UploadWorkspace: React.FC<UploadWorkspaceProps> = ({ onPipelineSucc
     setIsProcessing(false);
     onPipelineSuccess(res);
   };
+
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
@@ -149,20 +178,53 @@ export const UploadWorkspace: React.FC<UploadWorkspaceProps> = ({ onPipelineSucc
           </div>
 
           <div className="bg-slate-900/80 border-2 border-dashed border-slate-700/80 hover:border-cyan-500/50 rounded-xl p-5 flex flex-col items-center justify-center text-center transition-all cursor-pointer relative group">
-            <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-indigo-400 mb-2 group-hover:scale-110 transition-transform">
-              <ImageIcon className="w-5 h-5" />
-            </div>
-            <h3 className="text-xs font-semibold text-slate-200">
-              {figureFile ? figureFile.name : 'Upload Custom Figure Image (Optional)'}
-            </h3>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => e.target.files?.[0] && setFigureFile(e.target.files[0])}
-              className="absolute inset-0 opacity-0 cursor-pointer"
-            />
+            {figurePreview ? (
+              <div className="relative w-full flex flex-col items-center">
+                <img src={figurePreview} alt="Upload preview" className="max-h-28 rounded-lg object-contain mb-2 border border-slate-700" />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-emerald-400 font-mono truncate max-w-[200px]">
+                    {figureFile?.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFigureFile(null);
+                    }}
+                    className="p-1 rounded-full bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-300 transition-colors cursor-pointer"
+                    title="Remove custom figure"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <span className="text-[10px] text-cyan-300 font-mono mt-1">Live EasyOCR will process this image</span>
+              </div>
+            ) : (
+              <>
+                <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-indigo-400 mb-2 group-hover:scale-110 transition-transform">
+                  <ImageIcon className="w-5 h-5" />
+                </div>
+                <h3 className="text-xs font-semibold text-slate-200">
+                  Upload Custom Figure Image (PNG, JPG)
+                </h3>
+                <p className="text-[10px] text-slate-500 mt-0.5">Click or drag & drop to run real OCR</p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => e.target.files?.[0] && setFigureFile(e.target.files[0])}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                />
+              </>
+            )}
           </div>
         </div>
+
+        {figureFile && (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-3 text-xs text-emerald-300 font-mono flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Ready to run live EasyOCR detection & grounding graph on <strong>{figureFile.name}</strong>.</span>
+          </div>
+        )}
 
         {/* Natural Language Prompt Query */}
         <div>
@@ -182,10 +244,23 @@ export const UploadWorkspace: React.FC<UploadWorkspaceProps> = ({ onPipelineSucc
         {!isProcessing ? (
           <button
             onClick={handleProcess}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-medium text-sm shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className={`w-full py-3.5 rounded-xl font-medium text-sm shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              figureFile
+                ? 'bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white shadow-emerald-500/20'
+                : 'bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white shadow-cyan-500/20'
+            }`}
           >
-            Run Multimodal Analysis on SciCap Benchmark
-            <ArrowRight className="w-4 h-4" />
+            {figureFile ? (
+              <>
+                <Sparkles className="w-4 h-4" />
+                Run Real-Time Analysis on Uploaded Figure ({figureFile.name})
+              </>
+            ) : (
+              <>
+                Run Multimodal Analysis on SciCap Benchmark
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         ) : (
           <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-6">
