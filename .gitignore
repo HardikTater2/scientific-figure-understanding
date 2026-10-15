@@ -79,4 +79,8 @@ data/external/
 archive/results_old/
 models/checkpoints/*.pt
 
+# Temporary runtime uploads
+demo/uploads/
+
+
 

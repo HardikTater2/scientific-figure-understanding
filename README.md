@@ -244,7 +244,8 @@ uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 API Documentation will be live at `http://localhost:8000/docs` (Swagger UI) and `http://localhost:8000/redoc`.
 
 **Key Endpoints:**
-- `POST /run-pipeline`: Execute complete PDF ingestion, OCR, entity extraction, GNN grounding, and caption synthesis.
+- `POST /upload-and-run`: Multipart form upload for custom figures (PNG/JPG) and optional PDFs. Runs live EasyOCR, automatic diagram vs. Cartesian plot detection, workflow component parsing, entity grounding, and NLI claim verification.
+- `POST /run-pipeline`: Execute complete PDF ingestion, OCR, entity extraction, GNN grounding, and caption synthesis on local file paths.
 - `GET /scicap/samples`: List pre-indexed SciCap paper and figure pairs.
 - `POST /scicap/run-sample/{sample_id}`: Run full grounding evaluation on a benchmark sample.
 - `POST /detect-3d`: Analyze whether an input figure contains 3D volumetric / coordinate structure.
@@ -257,11 +258,13 @@ npm install
 npm run dev
 ```
 Open `http://localhost:5173` to explore:
-- Interactive bounding box and entity graph visualization;
-- Inspection of predicted text roles with confidence scores;
-- Live benchmark table browser with provenance badges.
+- **Interactive Workspace**: Drag-and-drop custom scientific figures or multi-task architecture diagrams for live OCR, entity extraction, and claim entailment verification;
+- **Interactive Bounding Box Viewer**: Hover and inspect predicted text roles (`AXIS`, `LEGEND`, `LABEL`, `TICK`) with confidence scores;
+- **Grounding Graph & Entity Explorer**: Visualize bipartite cross-modal links connecting textual entity mentions to visual chart regions;
+- **Live Benchmark Explorer**: View actively computed metrics with full reproduction provenance badges.
 
 ---
+
 
 ## 9. Limitations & Scientific Honesty
 
