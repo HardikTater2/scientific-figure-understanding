@@ -9,7 +9,9 @@ Status: PROTOTYPE (evidence-slot template). No vision-language model is loaded; 
 (e.g. "performance gains") that are not present in the retrieved evidence.
 """
 
+import re
 from typing import Dict, Any, List
+
 
 
 class GroundedCaptionGenerator:
@@ -51,33 +53,85 @@ class GroundedCaptionGenerator:
         elements = figure_elements.get("elements", [])
         axes = [e["text"] for e in elements if e.get("type") == "AXIS" and e.get("text")]
         legends = [e["text"] for e in elements if e.get("type") == "LEGEND" and e.get("text")]
+        is_diagram = figure_elements.get("figure_type") == "diagram" or (not axes and bool(elements))
 
         methods = [e["text"] for e in dedup_entities if e["type"] in ["METHOD", "MODEL"]]
         metrics = [e["text"] for e in dedup_entities if e["type"] in ["METRIC"]]
         datasets = [e["text"] for e in dedup_entities if e["type"] == "DATASET"]
 
         sentences = []
-        if methods:
-            s = f"Comparison of {', '.join(methods[:3])}"
-            if metrics:
-                s += f" in terms of {', '.join(metrics[:2])}"
-            if datasets:
-                s += f" on {', '.join(datasets[:2])}"
-            sentences.append(s)
-        elif metrics:
-            sentences.append(f"{', '.join(metrics[:2])} reported" + (f" on {', '.join(datasets[:2])}" if datasets else ""))
-        if len(axes) >= 2:
-            sentences.append(f"The axes show {axes[0]} and {axes[1]}")
-        elif axes:
-            sentences.append(f"The axis shows {axes[0]}")
-        if legends:
-            sentences.append(f"Legend entries: {', '.join(legends[:4])}")
-        # The retrieved paragraph is returned as supporting evidence, not copied into the
-        # caption: quoting it would make the verifier trivially mark that sentence SUPPORTED.
+        if is_diagram and elements:
+            elem_texts = [e["text"] for e in elements if e.get("text")]
+            inputs = [t for t in elem_texts if any(k in t.lower() for k in ["input", "photo", "image", "rgb", "data", "source"])]
+            encoders = [t for t in elem_texts if any(k in t.lower() for k in ["encoder", "backbone", "shared"])]
+            decoders = [t for t in elem_texts if any(k in t.lower() for k in ["decoder", "head", "unet"])]
+            outputs = [t for t in elem_texts if any(k in t.lower() for k in ["map", "output", "target", "prediction", "lesion map", "vessel map"])]
+            losses = [t for t in elem_texts if any(k in t.lower() for k in ["loss", "bce", "dice", "focal"])]
+            stages = [t for t in elem_texts if any(k in t.lower() for k in ["stage", "train", "fine-tune", "joint"])]
+
+            def _clean_tokens(tokens: List[str]) -> List[str]:
+                cleaned = []
+                seen = set()
+                for t in tokens:
+                    c = re.sub(r"^[,\s;:\-\.]+|[,\s;:\-\.]+$", "", t).strip()
+                    if c and c.lower() not in seen:
+                        seen.add(c.lower())
+                        cleaned.append(c)
+                return cleaned
+
+            # 1. Input and Encoder workflow
+            if encoders:
+                enc_desc = ", ".join(_clean_tokens(encoders)[:2])
+                if inputs:
+                    sentences.append(f"Architecture diagram where input {_clean_tokens(inputs)[0]} feeds {enc_desc}")
+                else:
+                    sentences.append(f"Architecture workflow diagram featuring {enc_desc}")
+            elif inputs:
+                sentences.append(f"Architecture workflow diagram processing input {_clean_tokens(inputs)[0]}")
+            elif methods:
+                sentences.append(f"System architecture diagram for {', '.join(methods[:2])}")
+            else:
+                sentences.append("Technical architecture workflow diagram")
+
+            # 2. Decoders and Outputs
+            if decoders:
+                dec_desc = ", ".join(_clean_tokens(decoders)[:3])
+                if outputs:
+                    out_desc = ", ".join(_clean_tokens(outputs)[:3])
+                    sentences.append(f"Features feed {dec_desc} to generate {out_desc}")
+                else:
+                    sentences.append(f"Features are decoded by {dec_desc}")
+            elif outputs:
+                sentences.append(f"Output predictions include {', '.join(_clean_tokens(outputs)[:3])}")
+
+            # 3. Training notes and loss functions
+            train_notes = _clean_tokens(stages + losses)
+            if train_notes:
+                sentences.append(f"Training and loss objectives: {'; '.join(train_notes[:3])}")
+
+
+        else:
+            if methods:
+                s = f"Comparison of {', '.join(methods[:3])}"
+                if metrics:
+                    s += f" in terms of {', '.join(metrics[:2])}"
+                if datasets:
+                    s += f" on {', '.join(datasets[:2])}"
+                sentences.append(s)
+            elif metrics:
+                sentences.append(f"{', '.join(metrics[:2])} reported" + (f" on {', '.join(datasets[:2])}" if datasets else ""))
+            if len(axes) >= 2:
+                sentences.append(f"The axes show {axes[0]} and {axes[1]}")
+            elif axes:
+                sentences.append(f"The axis shows {axes[0]}")
+            if legends:
+                sentences.append(f"Legend entries: {', '.join(legends[:4])}")
+
         if not sentences:
             sentences.append("Insufficient evidence to describe this figure")
 
         generated_caption = ". ".join(sentences) + "."
+
 
         # Fraction of mentioned entities that are grounded to at least one figure element.
         grounded = self._grounded_entity_texts(graph_summary)

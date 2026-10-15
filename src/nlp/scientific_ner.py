@@ -27,13 +27,14 @@ class ScientificNERExtractor:
         seen_keys = set()
         
         patterns = {
-            "METHOD": r"\b(ResNet|Transformer|ViT|CNN|PointNet\+\+|BLIP-2|LLaVA|BERT|SciBERT|FAISS|Chroma|GNN|ResNet-50|ViT-Base)\b",
-            "DATASET": r"\b(CIFAR-10|ImageNet|ImageNet-1k|SciCap|SourceData|SciNLI|UniDoc|DocMMIR|S1-MMAlign|arXiv|JFT-300M)\b",
-            "METRIC": r"\b(top-1 accuracy|accuracy|F1|Precision|Recall|BLEU|ROUGE|MRR|Recall@\d+|SCQ|loss)\b",
-            "METRIC_VALUE": r"\b(\d+\.?\d*%|\d+\.\d+)\b",
-            "VARIABLE": r"\b(Epochs?|Accuracy|Loss|Precision|Learning Rate|Batch Size)\b",
-            "ALGORITHM": r"\b(AdamW|Cosine Decay|Cosine learning rate decay)\b",
-            "FIGURE_ELEMENT": r"\b(axis|x-axis|y-axis|legend|curve|data series|plot|bars|heatmap)\b"
+            "METHOD": r"\b(ResNet|Transformer|ViT|CNN|PointNet\+\+|BLIP-2|LLaVA|BERT|SciBERT|FAISS|Chroma|GNN|ResNet-50|ViT-Base|EfficientNet(?:-[A-Za-z0-9]+)?|UNet\+{0,2}|U-Net\+{0,2}|Retina-AI|VNet|DenseNet|YOLO)\b",
+            "DATASET": r"\b(CIFAR-10|ImageNet|ImageNet-1k|SciCap|SourceData|SciNLI|UniDoc|DocMMIR|S1-MMAlign|arXiv|JFT-300M|Fundus photo|fundus|retinal|vessel map|lesion map)\b",
+            "METRIC": r"\b(top-1 accuracy|accuracy|F1|Precision|Recall|BLEU|ROUGE|MRR|Recall@\d+|SCQ|loss|Dice loss|Dice|BCE(?:\s*\+\s*Dice)?|masked focal(?:\s*\+\s*Dice)?|focal loss|cross-entropy)\b",
+            "METRIC_VALUE": r"\b(\d+\.?\d*%|\d+\.\d+|\d+x\d+)\b",
+            "VARIABLE": r"\b(Epochs?|Accuracy|Loss|Precision|Learning Rate|Batch Size|channels?|classes)\b",
+            "ALGORITHM": r"\b(AdamW|Cosine Decay|Cosine learning rate decay|Stage [A-Z]|fine-tune|joint training)\b",
+            "FIGURE_ELEMENT": r"\b(axis|x-axis|y-axis|legend|curve|data series|plot|bars|heatmap|encoder|decoder|shared encoder|flowchart|architecture)\b"
+
         }
 
         for ent_type, pattern in patterns.items():

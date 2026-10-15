@@ -125,8 +125,18 @@ class FigureProcessor:
             return {"figure_id": figure_id, "dimensions": {"width": W, "height": H}, "elements": [],
                     "status": f"UNAVAILABLE (OCR engine not available: {e})"}
 
+        numeric_count = sum(1 for d in dets if is_numeric_text(d["text"]))
+        diagram_keywords = {"encoder", "decoder", "feed", "feeds", "train", "trains", "stage", "architecture", "photo", "input", "output", "loss", "unet", "resnet", "map", "step", "network", "layer"}
+        text_words = set(" ".join(d["text"].lower() for d in dets).split())
+        is_diagram = numeric_count < 3 and len(text_words.intersection(diagram_keywords)) >= 2
+
         text_boxes = [d for d in dets if not is_numeric_text(d["text"])]
-        types = self._classify(text_boxes, W, H)
+        if is_diagram:
+            types = ["LABEL"] * len(text_boxes)
+            figure_type = "diagram"
+        else:
+            types = self._classify(text_boxes, W, H)
+            figure_type = "plot"
 
         elements: List[Dict[str, Any]] = []
         for d, t in zip(text_boxes, types):
@@ -141,7 +151,9 @@ class FigureProcessor:
 
         return {
             "figure_id": figure_id,
+            "figure_type": figure_type,
             "dimensions": {"width": W, "height": H},
             "status": "IMPLEMENTED (EasyOCR + layout heuristics)",
             "elements": elements,
         }
+

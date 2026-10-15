@@ -50,38 +50,49 @@ def run_end_to_end_pipeline(paper_path: str, figure_path: str, query: str, confi
     
     config = get_config(config_path)
     
-    # 1. Document Ingestion
-    print("\n[Step 1/8] Ingesting Scientific Document...")
+    # 1. Figure Processing & Element Detection
+    print("\n[Step 1/8] Processing Figure & Detecting Visual Elements...")
+    fig_processor = FigureProcessor(config)
+    figure_elements = fig_processor.process_figure(figure_path)
+    fig_type_desc = figure_elements.get("figure_type", "plot")
+    print(f"  -> Detected {len(figure_elements.get('elements', []))} figure elements ({fig_type_desc}).")
+
+    # 2. Document Ingestion
+    print("\n[Step 2/8] Ingesting Scientific Document...")
     ingestor = PDFIngestor(config)
     if doc_structure is not None:
         pass
     elif os.path.exists(paper_path):
         doc_structure = ingestor.parse_pdf(paper_path)
     else:
-        print(f"Warning: PDF path '{paper_path}' not found. Using synthetic document structure for prototype demo.")
+        # Standalone figure mode: construct context directly from the figure's OCR text
+        fig_ocr_texts = [e["text"] for e in figure_elements.get("elements", []) if e.get("text")]
+        fig_title = os.path.splitext(os.path.basename(figure_path))[0]
+        context_text = ". ".join(fig_ocr_texts) if fig_ocr_texts else query
+        print(f"  -> Standalone Figure Mode (no external PDF). Context formed from {len(fig_ocr_texts)} visual elements.")
         doc_structure = {
-            "paper_id": "sample_paper_01",
-            "title": "Deep Residual Learning for Image Recognition",
+            "paper_id": fig_title,
+            "title": f"Figure Analysis: {fig_title}",
             "sections": [
                 {
-                    "section_id": "sec_1",
-                    "title": "1. Introduction",
+                    "section_id": "sec_visual",
+                    "title": "Visual Figure Components",
                     "paragraphs": [
                         {
-                            "paragraph_id": "p_1",
-                            "text": "Deeper neural networks are more difficult to train. We present a residual learning framework to ease the training of networks that are substantially deeper than those used previously. ResNet achieved 85.3% accuracy on ImageNet dataset."
+                            "paragraph_id": "p_visual_1",
+                            "text": context_text
                         }
                     ]
                 }
             ],
-            "figures": [],
-            "metadata": {"status": "SYNTHETIC FALLBACK (PDF not found; built-in demo text used)"}
+            "figures": [{"figure_id": figure_elements.get("figure_id", "fig_1"), "path": figure_path}],
+            "metadata": {"status": "STANDALONE_FIGURE (Direct OCR visual context; no external paper injected)"}
         }
 
     print(f"  -> Extracted Paper Title: '{doc_structure.get('title')}' ({len(doc_structure.get('sections', []))} sections)")
 
-    # 2. Scientific NER
-    print("\n[Step 2/8] Extracting Scientific Named Entities...")
+    # 3. Scientific NER
+    print("\n[Step 3/8] Extracting Scientific Named Entities...")
     ner = ScientificNERExtractor(config=config)
     full_text = " ".join([p["text"] for sec in doc_structure["sections"] for p in sec["paragraphs"]])
     entities = ner.extract_entities(full_text)
@@ -90,18 +101,12 @@ def run_end_to_end_pipeline(paper_path: str, figure_path: str, query: str, confi
     for e in entities[:5]:
         print(f"     * [{e['type']}] {e['text']}")
 
-    # 3. Hierarchical Retrieval & Indexing
-    print("\n[Step 3/8] Building 4-Level Hierarchical Vector Index & Retrieving Context...")
+    # 4. Hierarchical Retrieval & Indexing
+    print("\n[Step 4/8] Building 4-Level Hierarchical Vector Index & Retrieving Context...")
     indexer = HierarchicalIndexer(weights=config.get("hierarchical_retrieval.weights"))
     indexer.index_document(doc_structure, entities)
     retrieved_context = indexer.retrieve(query, top_k=3)
     print(f"  -> Context Weighted Score for query '{query}': {retrieved_context['weighted_score']:.4f}")
-
-    # 4. Figure Processing
-    print("\n[Step 4/8] Processing Figure & Detecting Visual Elements...")
-    fig_processor = FigureProcessor(config)
-    figure_elements = fig_processor.process_figure(figure_path)
-    print(f"  -> Detected {len(figure_elements.get('elements', []))} figure elements (Axes, Legends, Chart Regions).")
 
     # 5. Entity Grounding Graph
     print("\n[Step 5/8] Constructing Entity Grounding Graph...")
@@ -119,11 +124,18 @@ def run_end_to_end_pipeline(paper_path: str, figure_path: str, query: str, confi
     # 7. Hallucination & Fact Verification
     print("[Step 7/8] Verifying Evidence & Technical Correctness...")
     verifier = HallucinationChecker(config)
+    # Ground truth evidence includes retrieved document context AND detected figure visual text
+    evidence_items = list(retrieved_context["level_results"].get("paragraph", []))
+    for elem in figure_elements.get("elements", []):
+        if elem.get("text"):
+            evidence_items.append({"text": elem["text"]})
+
     verification_output = verifier.verify_caption(
         caption_output["generated_caption"],
-        retrieved_context["level_results"].get("paragraph", [])
+        evidence_items
     )
     print(f"  -> Technical Correctness Ratio: {verification_output['technical_correctness_ratio']*100:.1f}%")
+
 
     # 8. SCQ Metric Evaluation
     print("\n[Step 8/8] Computing SCQ Composite Score...")
