@@ -1,0 +1,17 @@
+{
+  "test_precision": 0.7929,
+  "test_recall": 0.9975,
+  "test_f1": 0.8835,
+  "coefficients": [
+    -4.050897011670636,
+    -3.30308590658888,
+    1.2538856100904836,
+    -0.6914450560490022
+  ],
+  "intercept": 1.1437676329919682,
+  "leakage_risk": true,
+  "provenance": "synthetic",
+  "generated_by": "scripts/test_position_shortcuts.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T07:45:00"
+}

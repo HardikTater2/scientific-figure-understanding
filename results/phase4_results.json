@@ -16,25 +16,25 @@
   },
   "seed": 42,
   "hardware": {
-    "platform": "Linux-6.18.44-fc-v114-x86_64-with-glibc2.39",
-    "processor": "x86_64",
-    "torch": "2.14.1+cu130",
-    "threads": 4,
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "processor": "arm",
+    "torch": "2.14.1",
+    "threads": 8,
     "device": "cpu"
   },
-  "timestamp": "2026-10-14T14:14:39",
+  "timestamp": "2026-10-15T11:15:33",
   "figure_classifier": {
     "architecture": "4-block CNN (16-32-64-64), 128x128 RGB input, 7 classes",
     "training": {
-      "train_time_s": 8.88,
+      "train_time_s": 24.69,
       "epochs": 25,
       "batch_size": 32,
       "lr": 0.001,
       "optimizer": "Adam",
       "weight_decay": 0.0001,
       "precise_bn": true,
-      "initial_loss": 1.5958,
-      "final_loss": 0.042,
+      "initial_loss": 1.599,
+      "final_loss": 0.0417,
       "num_train": 282
     },
     "test": {
@@ -43,7 +43,7 @@
       "is_3d_precision": 1.0,
       "is_3d_recall": 1.0,
       "num_test": 118,
-      "inference_ms_per_figure_batched": 0.429
+      "inference_ms_per_figure_batched": 2.487
     },
     "text_keyword_baseline_test": {
       "is_3d_accuracy": 1.0,
@@ -68,26 +68,26 @@
       "criterion": "val MRR (pointnet+multiview)",
       "candidates": {
         "rotation_augmentation=True": {
-          "recall@1": 0.2609,
-          "recall@5": 0.7826,
-          "mrr": 0.4664,
+          "recall@1": 0.1304,
+          "recall@5": 0.6957,
+          "mrr": 0.4161,
           "protein_recall@1": 0.0,
-          "surface_recall@1": 0.6,
-          "scatter3d_recall@1": 0.375
+          "surface_recall@1": 0.4,
+          "scatter3d_recall@1": 0.125
         },
         "rotation_augmentation=False": {
-          "recall@1": 0.4783,
-          "recall@5": 0.8696,
-          "mrr": 0.6534,
+          "recall@1": 0.4348,
+          "recall@5": 0.8261,
+          "mrr": 0.6179,
           "protein_recall@1": 0.5,
           "surface_recall@1": 0.6,
-          "scatter3d_recall@1": 0.375
+          "scatter3d_recall@1": 0.25
         }
       },
       "selected_rotation_augmentation": false
     },
     "training": {
-      "train_time_s": 153.82,
+      "train_time_s": 266.42,
       "epochs": 60,
       "batch_size": 32,
       "lr": 0.001,
@@ -96,8 +96,8 @@
       "precise_bn": true,
       "rotation_augmentation": false,
       "num_views": 6,
-      "initial_loss": 6.4298,
-      "final_loss": 0.52,
+      "initial_loss": 6.4062,
+      "final_loss": 0.5112,
       "num_train_3d_figures": 137,
       "num_train_geometries": 93
     },
@@ -107,57 +107,57 @@
       44
     ],
     "train_time_s_per_seed": [
-      149.28,
-      148.52,
-      153.82
+      280.55,
+      270.55,
+      266.42
     ],
     "test_trained_mean_std": {
       "pointnet": {
         "recall@1": {
-          "mean": 0.1376,
-          "std": 0.0149
+          "mean": 0.1217,
+          "std": 0.0417
         },
         "recall@5": {
-          "mean": 0.4603,
-          "std": 0.0518
+          "mean": 0.4656,
+          "std": 0.0326
         },
         "mrr": {
-          "mean": 0.2905,
-          "std": 0.0114
+          "mean": 0.2854,
+          "std": 0.0384
         },
         "protein_recall@1": {
-          "mean": 0.1467,
-          "std": 0.0822
+          "mean": 0.16,
+          "std": 0.0566
         },
         "surface_recall@1": {
           "mean": 0.1482,
-          "std": 0.0693
+          "std": 0.0262
         },
         "scatter3d_recall@1": {
-          "mean": 0.1167,
-          "std": 0.0471
+          "mean": 0.05,
+          "std": 0.0408
         }
       },
       "multiview": {
         "recall@1": {
-          "mean": 0.1587,
-          "std": 0.0259
+          "mean": 0.1957,
+          "std": 0.0524
         },
         "recall@5": {
-          "mean": 0.4921,
-          "std": 0.0224
+          "mean": 0.4973,
+          "std": 0.054
         },
         "mrr": {
-          "mean": 0.3194,
-          "std": 0.0236
+          "mean": 0.3368,
+          "std": 0.0516
         },
         "protein_recall@1": {
-          "mean": 0.2533,
-          "std": 0.0499
+          "mean": 0.28,
+          "std": 0.1131
         },
         "surface_recall@1": {
-          "mean": 0.1296,
-          "std": 0.0262
+          "mean": 0.2222,
+          "std": 0.0
         },
         "scatter3d_recall@1": {
           "mean": 0.0667,
@@ -167,107 +167,107 @@
       "pointnet+multiview": {
         "recall@1": {
           "mean": 0.1534,
-          "std": 0.0326
+          "std": 0.0714
         },
         "recall@5": {
-          "mean": 0.4974,
-          "std": 0.0074
+          "mean": 0.508,
+          "std": 0.0343
         },
         "mrr": {
-          "mean": 0.317,
-          "std": 0.0298
+          "mean": 0.3216,
+          "std": 0.0619
         },
         "protein_recall@1": {
           "mean": 0.1733,
-          "std": 0.0499
+          "std": 0.1147
         },
         "surface_recall@1": {
-          "mean": 0.1667,
-          "std": 0.0454
+          "mean": 0.1852,
+          "std": 0.0262
         },
         "scatter3d_recall@1": {
-          "mean": 0.1167,
-          "std": 0.0236
+          "mean": 0.1,
+          "std": 0.0816
         }
       }
     },
     "test_trained_per_seed": [
       {
         "pointnet": {
-          "recall@1": 0.127,
-          "recall@5": 0.4603,
-          "mrr": 0.278,
-          "protein_recall@1": 0.04,
-          "surface_recall@1": 0.2222,
-          "scatter3d_recall@1": 0.15
+          "recall@1": 0.0635,
+          "recall@5": 0.4286,
+          "mrr": 0.2359,
+          "protein_recall@1": 0.08,
+          "surface_recall@1": 0.1111,
+          "scatter3d_recall@1": 0.0
         },
         "multiview": {
-          "recall@1": 0.127,
-          "recall@5": 0.4762,
-          "mrr": 0.2961,
+          "recall@1": 0.1587,
+          "recall@5": 0.4444,
+          "mrr": 0.2877,
           "protein_recall@1": 0.2,
-          "surface_recall@1": 0.1111,
+          "surface_recall@1": 0.2222,
           "scatter3d_recall@1": 0.05
         },
         "pointnet+multiview": {
           "recall@1": 0.1111,
-          "recall@5": 0.4921,
-          "mrr": 0.2841,
-          "protein_recall@1": 0.12,
-          "surface_recall@1": 0.1111,
-          "scatter3d_recall@1": 0.1
+          "recall@5": 0.4762,
+          "mrr": 0.267,
+          "protein_recall@1": 0.16,
+          "surface_recall@1": 0.1667,
+          "scatter3d_recall@1": 0.0
         }
       },
       {
         "pointnet": {
-          "recall@1": 0.1587,
-          "recall@5": 0.5238,
-          "mrr": 0.3055,
-          "protein_recall@1": 0.24,
-          "surface_recall@1": 0.0556,
-          "scatter3d_recall@1": 0.15
+          "recall@1": 0.1429,
+          "recall@5": 0.4603,
+          "mrr": 0.2908,
+          "protein_recall@1": 0.2,
+          "surface_recall@1": 0.1667,
+          "scatter3d_recall@1": 0.05
         },
         "multiview": {
           "recall@1": 0.1587,
           "recall@5": 0.4762,
-          "mrr": 0.3105,
-          "protein_recall@1": 0.24,
-          "surface_recall@1": 0.1667,
+          "mrr": 0.3145,
+          "protein_recall@1": 0.2,
+          "surface_recall@1": 0.2222,
           "scatter3d_recall@1": 0.05
         },
         "pointnet+multiview": {
-          "recall@1": 0.1587,
-          "recall@5": 0.5079,
-          "mrr": 0.3107,
-          "protein_recall@1": 0.16,
+          "recall@1": 0.0952,
+          "recall@5": 0.4921,
+          "mrr": 0.2896,
+          "protein_recall@1": 0.04,
           "surface_recall@1": 0.1667,
-          "scatter3d_recall@1": 0.15
+          "scatter3d_recall@1": 0.1
         }
       },
       {
         "pointnet": {
-          "recall@1": 0.127,
-          "recall@5": 0.3968,
-          "mrr": 0.2879,
-          "protein_recall@1": 0.16,
+          "recall@1": 0.1587,
+          "recall@5": 0.5079,
+          "mrr": 0.3296,
+          "protein_recall@1": 0.2,
           "surface_recall@1": 0.1667,
-          "scatter3d_recall@1": 0.05
+          "scatter3d_recall@1": 0.1
         },
         "multiview": {
-          "recall@1": 0.1905,
-          "recall@5": 0.5238,
-          "mrr": 0.3517,
-          "protein_recall@1": 0.32,
-          "surface_recall@1": 0.1111,
+          "recall@1": 0.2698,
+          "recall@5": 0.5714,
+          "mrr": 0.4081,
+          "protein_recall@1": 0.44,
+          "surface_recall@1": 0.2222,
           "scatter3d_recall@1": 0.1
         },
         "pointnet+multiview": {
-          "recall@1": 0.1905,
-          "recall@5": 0.4921,
-          "mrr": 0.3562,
-          "protein_recall@1": 0.24,
+          "recall@1": 0.254,
+          "recall@5": 0.5556,
+          "mrr": 0.4082,
+          "protein_recall@1": 0.32,
           "surface_recall@1": 0.2222,
-          "scatter3d_recall@1": 0.1
+          "scatter3d_recall@1": 0.2
         }
       }
     ],
@@ -277,34 +277,34 @@
       "chance_recall@1": 0.0233,
       "results": {
         "pointnet": {
-          "recall@1": 0.127,
-          "recall@5": 0.4603,
-          "mrr": 0.278,
-          "protein_recall@1": 0.04,
-          "surface_recall@1": 0.2222,
-          "scatter3d_recall@1": 0.15
+          "recall@1": 0.0635,
+          "recall@5": 0.4286,
+          "mrr": 0.2359,
+          "protein_recall@1": 0.08,
+          "surface_recall@1": 0.1111,
+          "scatter3d_recall@1": 0.0
         },
         "multiview": {
-          "recall@1": 0.127,
-          "recall@5": 0.4762,
-          "mrr": 0.2961,
+          "recall@1": 0.1587,
+          "recall@5": 0.4444,
+          "mrr": 0.2877,
           "protein_recall@1": 0.2,
-          "surface_recall@1": 0.1111,
+          "surface_recall@1": 0.2222,
           "scatter3d_recall@1": 0.05
         },
         "pointnet+multiview": {
           "recall@1": 0.1111,
-          "recall@5": 0.4921,
-          "mrr": 0.2841,
-          "protein_recall@1": 0.12,
-          "surface_recall@1": 0.1111,
-          "scatter3d_recall@1": 0.1
+          "recall@5": 0.4762,
+          "mrr": 0.267,
+          "protein_recall@1": 0.16,
+          "surface_recall@1": 0.1667,
+          "scatter3d_recall@1": 0.0
         }
       },
       "inference_ms": {
-        "image_encoder_per_figure": 0.243,
-        "pointnet_per_geometry": 4.488,
-        "multiview_per_geometry_excl_render": 0.913
+        "image_encoder_per_figure": 1.609,
+        "pointnet_per_geometry": 20.092,
+        "multiview_per_geometry_excl_render": 3.361
       }
     },
     "test_untrained_baseline": {
@@ -338,9 +338,9 @@
         }
       },
       "inference_ms": {
-        "image_encoder_per_figure": 0.286,
-        "pointnet_per_geometry": 4.332,
-        "multiview_per_geometry_excl_render": 0.457
+        "image_encoder_per_figure": 1.533,
+        "pointnet_per_geometry": 19.879,
+        "multiview_per_geometry_excl_render": 3.86
       }
     }
   },
@@ -348,5 +348,8 @@
     "SciFig-Controlled is synthetic (matplotlib renders); in-domain accuracy does not transfer to real paper figures.",
     "Protein test structures are disjoint from training structures; surfaces and 3D scatters are new random instances of the same parametric families.",
     "No pretrained vision weights were available (HuggingFace / download.pytorch.org unreachable); all encoders are trained from scratch."
-  ]
+  ],
+  "provenance": "synthetic",
+  "generated_by": "pipelines/evaluate_phase4.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423"
 }

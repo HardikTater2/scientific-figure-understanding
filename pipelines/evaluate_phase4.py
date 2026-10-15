@@ -31,6 +31,7 @@ from src.models.vision.cross_modal_3d import (
     train_alignment, train_figure_classifier,
 )
 from src.vision.threed_detector import ThreeDVisualizationDetector
+from src.common_metadata import get_runtime_metadata
 
 
 VAL_MOLECULES = {"1A28", "2XHE"}
@@ -142,6 +143,8 @@ def main():
             "Protein test structures are disjoint from training structures; surfaces and 3D scatters are new random instances of the same parametric families.",
             "No pretrained vision weights were available (HuggingFace / download.pytorch.org unreachable); all encoders are trained from scratch.",
         ],
+        "provenance": "synthetic",
+        **get_runtime_metadata("pipelines/evaluate_phase4.py")
     }
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w") as f:

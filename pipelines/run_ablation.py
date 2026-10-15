@@ -53,6 +53,7 @@ from src.retrieval.multimodal_retriever import MultimodalRetriever
 from src.vision.figure_processor import FigureProcessor
 from src.vision.ocr_engine import OCREngine
 from src.vision.threed_detector import ThreeDVisualizationDetector
+from src.common_metadata import get_runtime_metadata
 
 VIS_TYPES = ["2D_PLOT", "3D_MOLECULAR_STRUCTURE", "3D_SURFACE_PLOT", "3D_SCATTER_PLOT"]
 RETRIEVAL_WEIGHTS = {"w_text": 0.4, "w_gnn": 0.3, "w_2d": 0.2, "w_3d": 0.1}  # fixed a priori
@@ -330,6 +331,8 @@ def main():
     report["paired_bootstrap"] = {"method": "paired bootstrap over test figures, 10000 resamples, 95% percentile CI",
                                   "comparisons": comparisons}
     report["per_figure"] = {"figure_ids": [f["figure_id"] for f in test_figs], **per_item}
+    report["provenance"] = "synthetic"
+    report.update(get_runtime_metadata("pipelines/run_ablation.py"))
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w") as f:

@@ -1,0 +1,8 @@
+{
+  "status": "NOT DONE",
+  "provenance": "none",
+  "note": "Figures were not downloaded published figures with source URLs. Quarantined.",
+  "generated_by": "pipelines/evaluate_real_3d_figures.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:38:49"
+}

@@ -9,15 +9,15 @@
     ]
   },
   "hardware": {
-    "platform": "Linux-6.18.44-fc-v114-x86_64-with-glibc2.39",
-    "torch": "2.14.1+cu130",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "torch": "2.14.1",
     "device": "cpu"
   },
-  "timestamp": "2026-10-14T15:19:59",
+  "timestamp": "2026-10-15T11:16:48",
   "ocr": {
     "mean_text_elements_per_figure": 9.14,
     "figures_with_no_text_detected": 19,
-    "latency_ms_median_uncached": 2842.7,
+    "latency_ms_median_uncached": 788.8,
     "note": "3D detection for this dataset is reported per mode in results/threed_detector_modes.json"
   },
   "ner_and_grounding": {
@@ -25,12 +25,12 @@
     "figures_with_no_entities": 130,
     "mean_grounded_links_per_figure": 0.25,
     "grounding_mode": "supervised",
-    "latency_ms_median": 2.14,
+    "latency_ms_median": 0.78,
     "note": "No grounding labels in SciCap - link accuracy cannot be measured."
   },
   "threed_detector_out_of_domain": {
     "mode": "image (pixels only)",
-    "false_positive_rate_on_graph_plots": 0.9268
+    "false_positive_rate_on_graph_plots": 0.9303
   },
   "leakage_check": {
     "paragraphs_containing_caption_verbatim": 35,
@@ -141,5 +141,8 @@
       "generated_caption": "The axes show preg and Distance from Nucleus (kpc).",
       "ocr": "log(ZHa) preg Distance from Nucleus (kpc) log(ZHa) ~1.0 ~0.5"
     }
-  ]
+  ],
+  "provenance": "silver_heuristic",
+  "generated_by": "pipelines/evaluate_scicap.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423"
 }

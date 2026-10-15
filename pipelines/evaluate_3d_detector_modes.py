@@ -23,6 +23,7 @@ from PIL import Image
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.vision.threed_detector import ThreeDVisualizationDetector
+from src.common_metadata import get_runtime_metadata
 
 MODES = ("image", "text", "agreement")
 
@@ -60,6 +61,9 @@ def main():
         report["scicap_real_graph_plots"] = {
             m: scores([det.detect_3d_content(p, r["caption"], r["paragraph_text"], mode=m)["is_3d"] for p, r in recs],
                       [False] * len(recs)) for m in MODES}
+
+    report["provenance"] = "synthetic"
+    report.update(get_runtime_metadata("pipelines/evaluate_3d_detector_modes.py"))
 
     os.makedirs("results", exist_ok=True)
     with open("results/threed_detector_modes.json", "w") as f:

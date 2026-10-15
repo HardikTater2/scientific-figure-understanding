@@ -50,6 +50,7 @@ from src.utils.config import get_config
 from src.vision.figure_processor import FigureProcessor
 from src.vision.ocr_engine import OCREngine
 from src.vision.threed_detector import ThreeDVisualizationDetector
+from src.common_metadata import get_runtime_metadata
 
 
 # ---------------------------------------------------------------- caption metrics
@@ -260,6 +261,8 @@ def main():
             "technical_correctness_mean": round(float(np.mean([x["technical_correctness"] for x in rows])), 4)},
         "scq": {"mean": round(float(np.mean(scq)), 4), "std": round(float(np.std(scq)), 4)},
         "examples": [{k: x[k] for k in ("figure_id", "caption", "generated_caption", "ocr")} for x in rows[:5]],
+        "provenance": "silver_heuristic",
+        **get_runtime_metadata("pipelines/evaluate_scicap.py")
     }
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w") as f:

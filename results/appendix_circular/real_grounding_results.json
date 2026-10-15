@@ -1,0 +1,220 @@
+{
+  "dataset": "SciCap-Grounding-Silver-v0",
+  "provenance": "silver_heuristic",
+  "num_val_figures": 50,
+  "num_test_figures": 200,
+  "total_test_gold_links": 189,
+  "settings": {
+    "oracle": {
+      "rules": {
+        "metrics": {
+          "precision": 0.0614,
+          "recall": 0.9577,
+          "f1": 0.1155,
+          "grounding_accuracy@1": 0.537,
+          "mrr": 0.6198,
+          "tp": 181,
+          "fp": 2765,
+          "fn": 8,
+          "total_gold": 189
+        },
+        "latency_ms": 0.04114600596949458
+      },
+      "gnn": {
+        "f1_mean": 0.3408,
+        "f1_std": 0.0245,
+        "mrr_mean": 0.8742,
+        "latency_ms": 2.373625000473112,
+        "runs": [
+          {
+            "precision": 0.3807,
+            "recall": 0.3545,
+            "f1": 0.3671,
+            "grounding_accuracy@1": 0.7619,
+            "mrr": 0.8577,
+            "tp": 67,
+            "fp": 109,
+            "fn": 122,
+            "total_gold": 189,
+            "latency_ms": 2.595874510006979
+          },
+          {
+            "precision": 0.3227,
+            "recall": 0.3757,
+            "f1": 0.3472,
+            "grounding_accuracy@1": 0.8042,
+            "mrr": 0.885,
+            "tp": 71,
+            "fp": 149,
+            "fn": 118,
+            "total_gold": 189,
+            "latency_ms": 2.373625000473112
+          },
+          {
+            "precision": 0.3419,
+            "recall": 0.2804,
+            "f1": 0.3081,
+            "grounding_accuracy@1": 0.8042,
+            "mrr": 0.8798,
+            "tp": 53,
+            "fp": 102,
+            "fn": 136,
+            "total_gold": 189,
+            "latency_ms": 2.326562476810068
+          }
+        ]
+      },
+      "no_message_passing": {
+        "f1_mean": 0.278,
+        "f1_std": 0.0286,
+        "mrr_mean": 0.8601,
+        "latency_ms": 1.3972914894111454,
+        "runs": [
+          {
+            "precision": 0.3017,
+            "recall": 0.2857,
+            "f1": 0.2935,
+            "grounding_accuracy@1": 0.7778,
+            "mrr": 0.8567,
+            "tp": 54,
+            "fp": 125,
+            "fn": 135,
+            "total_gold": 189,
+            "latency_ms": 1.3972914894111454
+          },
+          {
+            "precision": 0.3033,
+            "recall": 0.1958,
+            "f1": 0.2379,
+            "grounding_accuracy@1": 0.7619,
+            "mrr": 0.8523,
+            "tp": 37,
+            "fp": 85,
+            "fn": 152,
+            "total_gold": 189,
+            "latency_ms": 1.5030420036055148
+          },
+          {
+            "precision": 0.5,
+            "recall": 0.2169,
+            "f1": 0.3026,
+            "grounding_accuracy@1": 0.8042,
+            "mrr": 0.8712,
+            "tp": 41,
+            "fp": 41,
+            "fn": 148,
+            "total_gold": 189,
+            "latency_ms": 1.3569165312219411
+          }
+        ]
+      }
+    },
+    "end_to_end": {
+      "rules": {
+        "metrics": {
+          "precision": 0.0607,
+          "recall": 0.9577,
+          "f1": 0.1142,
+          "grounding_accuracy@1": 0.537,
+          "mrr": 0.6198,
+          "tp": 181,
+          "fp": 2800,
+          "fn": 8,
+          "total_gold": 189
+        },
+        "latency_ms": 0.05933298962190747
+      },
+      "gnn": {
+        "f1_mean": 0.3987,
+        "f1_std": 0.0347,
+        "mrr_mean": 0.8824,
+        "latency_ms": 2.861687506083399,
+        "runs": [
+          {
+            "precision": 0.3831,
+            "recall": 0.5291,
+            "f1": 0.4444,
+            "grounding_accuracy@1": 0.8042,
+            "mrr": 0.8764,
+            "tp": 100,
+            "fp": 161,
+            "fn": 89,
+            "total_gold": 189,
+            "latency_ms": 2.72360400413163
+          },
+          {
+            "precision": 0.4638,
+            "recall": 0.3386,
+            "f1": 0.3914,
+            "grounding_accuracy@1": 0.8307,
+            "mrr": 0.9004,
+            "tp": 64,
+            "fp": 74,
+            "fn": 125,
+            "total_gold": 189,
+            "latency_ms": 2.861687506083399
+          },
+          {
+            "precision": 0.3557,
+            "recall": 0.3651,
+            "f1": 0.3603,
+            "grounding_accuracy@1": 0.7884,
+            "mrr": 0.8704,
+            "tp": 69,
+            "fp": 125,
+            "fn": 120,
+            "total_gold": 189,
+            "latency_ms": 3.1519585172645748
+          }
+        ]
+      },
+      "no_message_passing": {
+        "f1_mean": 0.3084,
+        "f1_std": 0.0209,
+        "mrr_mean": 0.872,
+        "latency_ms": 1.4155005337670445,
+        "runs": [
+          {
+            "precision": 0.2995,
+            "recall": 0.2963,
+            "f1": 0.2979,
+            "grounding_accuracy@1": 0.8042,
+            "mrr": 0.8745,
+            "tp": 56,
+            "fp": 131,
+            "fn": 133,
+            "total_gold": 189,
+            "latency_ms": 1.7989170155487955
+          },
+          {
+            "precision": 0.424,
+            "recall": 0.2804,
+            "f1": 0.3376,
+            "grounding_accuracy@1": 0.7937,
+            "mrr": 0.8672,
+            "tp": 53,
+            "fp": 72,
+            "fn": 136,
+            "total_gold": 189,
+            "latency_ms": 1.3541249791160226
+          },
+          {
+            "precision": 0.4158,
+            "recall": 0.2222,
+            "f1": 0.2897,
+            "grounding_accuracy@1": 0.8042,
+            "mrr": 0.8742,
+            "tp": 42,
+            "fp": 59,
+            "fn": 147,
+            "total_gold": 189,
+            "latency_ms": 1.4155005337670445
+          }
+        ]
+      }
+    }
+  },
+  "generated_by": "pipelines/evaluate_real_grounding.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:48:27"
+}

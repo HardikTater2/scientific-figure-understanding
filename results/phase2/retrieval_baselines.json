@@ -1,0 +1,88 @@
+{
+  "provenance": "human_external_dataset",
+  "benchmark": "SciCap Caption-to-Figure Retrieval (288 Real Figures)",
+  "candidate_pool_size": 288,
+  "figures_with_ocr": 277,
+  "tokenization": "Shared regex word tokenization r'\\b\\w+\\b' and lowercasing across TF-IDF and BM25",
+  "generated_by": "pipelines/baseline_retrieval.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:45:34",
+  "random_chance": {
+    "recall@1": 0.0035,
+    "recall@5": 0.0174,
+    "mrr": 0.0217
+  },
+  "baselines": {
+    "random_chance": {
+      "R@1": 0.0035,
+      "R@5": 0.0174,
+      "MRR": 0.0217
+    },
+    "tfidf_text_only": {
+      "recall@1": 0.875,
+      "recall@5": 0.9306,
+      "mrr": 0.9003
+    },
+    "tfidf_text_plus_ocr": {
+      "recall@1": 0.8958,
+      "recall@5": 0.941,
+      "mrr": 0.9183
+    },
+    "bm25_text_only": {
+      "recall@1": 0.8229,
+      "recall@5": 0.9167,
+      "mrr": 0.8646
+    },
+    "bm25_text_plus_ocr": {
+      "recall@1": 0.8785,
+      "recall@5": 0.9236,
+      "mrr": 0.9005
+    },
+    "dense_all_minilm_text_only": {
+      "recall@1": 0.7743,
+      "recall@5": 0.8819,
+      "mrr": 0.8246
+    },
+    "dense_all_minilm_text_plus_ocr": {
+      "recall@1": 0.7847,
+      "recall@5": 0.9028,
+      "mrr": 0.8374
+    }
+  },
+  "ocr_gain_significance_tests": {
+    "tfidf_ocr_gain": {
+      "difference": 0.018,
+      "ci95_low": -0.0008,
+      "ci95_high": 0.0381,
+      "p_value_bootstrap": 0.0588,
+      "significant_at_0.05": false,
+      "holm_p_value": 0.1176,
+      "significant_after_holm": false
+    },
+    "bm25_ocr_gain": {
+      "difference": 0.036,
+      "ci95_low": 0.0174,
+      "ci95_high": 0.0571,
+      "p_value_bootstrap": 0.0,
+      "significant_at_0.05": true,
+      "holm_p_value": 0.0,
+      "significant_after_holm": true
+    },
+    "dense_ocr_gain": {
+      "difference": 0.0128,
+      "ci95_low": -0.0043,
+      "ci95_high": 0.0313,
+      "p_value_bootstrap": 0.1476,
+      "significant_at_0.05": false,
+      "holm_p_value": 0.1476,
+      "significant_after_holm": false
+    },
+    "dense_text_ocr_vs_bm25_text": {
+      "difference": -0.0272,
+      "ci95_low": -0.0699,
+      "ci95_high": 0.0142,
+      "p_value_bootstrap": 0.2034,
+      "significant_at_0.05": false
+    }
+  }
+}

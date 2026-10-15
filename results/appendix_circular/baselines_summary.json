@@ -1,0 +1,87 @@
+{
+  "dataset": "SciCap-Grounding-Silver-v0 (200 test figures, silver heuristic labels)",
+  "num_test_figures": 200,
+  "evaluation_setting": "Silver visual elements & silver extracted entities",
+  "methods_table": [
+    {
+      "method": "Untuned Rules (Legacy Graph)",
+      "precision": 0.0614,
+      "recall": 0.9577,
+      "f1": 0.1155,
+      "latency_ms": 0.0,
+      "cost_per_1k": 0.0,
+      "paired_f1_diff_vs_lr": null
+    },
+    {
+      "method": "Tuned Rules (Trigram Jaccard)",
+      "precision": 0.6727,
+      "recall": 0.5812,
+      "f1": 0.6236,
+      "latency_ms": 0.82,
+      "cost_per_1k": 0.0,
+      "paired_f1_diff_vs_lr": {
+        "difference": 0.0897,
+        "ci95_low": 0.0586,
+        "ci95_high": 0.1211,
+        "p_value_bootstrap": 0.0,
+        "significant_at_0.05": true
+      }
+    },
+    {
+      "method": "GNN (GAT Message Passing)",
+      "precision": 0.3484,
+      "recall": 0.3369,
+      "f1": 0.3408,
+      "latency_ms": 2.373625000473112,
+      "cost_per_1k": 0.0,
+      "paired_f1_diff_vs_lr": null
+    },
+    {
+      "method": "HistGradientBoosting (10 Features)",
+      "precision": 0.7077,
+      "recall": 0.7225,
+      "f1": 0.715,
+      "latency_ms": 0.17,
+      "cost_per_1k": 0.0,
+      "paired_f1_diff_vs_lr": null
+    },
+    {
+      "method": "Logistic Regression (10 Features)",
+      "precision": 0.6607,
+      "recall": 0.7749,
+      "f1": 0.7133,
+      "latency_ms": 0.0,
+      "cost_per_1k": 0.0,
+      "paired_f1_diff_vs_lr": "Reference Model"
+    },
+    {
+      "method": "Zero-Shot VLM (7B Class)",
+      "precision": null,
+      "recall": null,
+      "f1": "NOT DONE",
+      "latency_ms": null,
+      "cost_per_1k": null,
+      "paired_f1_diff_vs_lr": "NOT DONE (pending real local mlx-vlm execution)"
+    }
+  ],
+  "bootstrap_comparisons": {
+    "lr_vs_untuned_rules": {
+      "difference": 0.5978,
+      "ci95_low": 0.5583,
+      "ci95_high": 0.6363,
+      "p_value_bootstrap": 0.0,
+      "significant_at_0.05": true
+    },
+    "lr_vs_tuned_rules": {
+      "difference": 0.0897,
+      "ci95_low": 0.0586,
+      "ci95_high": 0.1211,
+      "p_value_bootstrap": 0.0,
+      "significant_at_0.05": true
+    }
+  },
+  "provenance": "silver_heuristic",
+  "generated_by": "pipelines/summarize_phase2_baselines.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:49:26"
+}

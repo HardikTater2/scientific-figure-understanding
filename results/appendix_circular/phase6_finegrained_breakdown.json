@@ -1,0 +1,108 @@
+{
+  "provenance": "silver_heuristic",
+  "breakdown_by_element_role": {
+    "AXIS": {
+      "precision": 0.7288,
+      "recall": 0.8958,
+      "f1": 0.8037,
+      "ci95_low": 0.7069,
+      "ci95_high": 0.8829,
+      "tp": 43,
+      "fp": 16,
+      "fn": 5,
+      "num_pairs": 2081
+    },
+    "LEGEND": {
+      "precision": 0.5968,
+      "recall": 0.6852,
+      "f1": 0.6379,
+      "ci95_low": 0.5246,
+      "ci95_high": 0.7368,
+      "tp": 37,
+      "fp": 25,
+      "fn": 17,
+      "num_pairs": 3316
+    },
+    "LABEL": {
+      "precision": 0.6602,
+      "recall": 0.764,
+      "f1": 0.7083,
+      "ci95_low": 0.6303,
+      "ci95_high": 0.7767,
+      "tp": 68,
+      "fp": 35,
+      "fn": 21,
+      "num_pairs": 7697
+    }
+  },
+  "breakdown_by_figure_type": {
+    "line_plot": {
+      "precision": 0.629,
+      "recall": 0.7573,
+      "f1": 0.6872,
+      "ci95_low": 0.6128,
+      "ci95_high": 0.7511,
+      "tp": 78,
+      "fp": 46,
+      "fn": 25,
+      "num_pairs": 6001,
+      "num_figures": 112,
+      "small_sample_flag": false
+    },
+    "scatter_plot": {
+      "precision": 0.6136,
+      "recall": 0.8438,
+      "f1": 0.7105,
+      "ci95_low": 0.5797,
+      "ci95_high": 0.8219,
+      "tp": 27,
+      "fp": 17,
+      "fn": 5,
+      "num_pairs": 3402,
+      "num_figures": 43,
+      "small_sample_flag": false
+    },
+    "bar_chart": {
+      "precision": 0.75,
+      "recall": 0.7674,
+      "f1": 0.7586,
+      "ci95_low": 0.6415,
+      "ci95_high": 0.8478,
+      "tp": 33,
+      "fp": 11,
+      "fn": 10,
+      "num_pairs": 2508,
+      "num_figures": 27,
+      "small_sample_flag": false
+    },
+    "diagram": {
+      "precision": 0.8182,
+      "recall": 0.9,
+      "f1": 0.8571,
+      "ci95_low": 0.6154,
+      "ci95_high": 1.0,
+      "tp": 9,
+      "fp": 2,
+      "fn": 1,
+      "num_pairs": 1131,
+      "num_figures": 16,
+      "small_sample_flag": true
+    },
+    "heatmap": {
+      "precision": 1.0,
+      "recall": 0.3333,
+      "f1": 0.5,
+      "ci95_low": 0.0,
+      "ci95_high": 1.0,
+      "tp": 1,
+      "fp": 0,
+      "fn": 2,
+      "num_pairs": 52,
+      "num_figures": 2,
+      "small_sample_flag": true
+    }
+  },
+  "generated_by": "pipelines/evaluate_breakdown_by_type.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:50:09"
+}

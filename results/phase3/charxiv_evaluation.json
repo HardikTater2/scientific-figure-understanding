@@ -1,0 +1,333 @@
+{
+  "provenance": "human_external_dataset",
+  "benchmark": "CharXiv Validation Split (NeurIPS 2024)",
+  "source_url": "https://charxiv.github.io/",
+  "sampling_method": "Fixed seed random.Random(0).shuffle per QID pool, taking first 40 questions per QID",
+  "seed": 0,
+  "questions_per_qid": 40,
+  "num_questions_evaluated": 320,
+  "runtime_s": 934.01,
+  "scoring_rules": {
+    "numeric_qids_4_5_6_7_12": "No substring containment; parsed float comparison with 5% relative tolerance; Q12 counts match exactly",
+    "text_qids_2_3": "Exact = normalized equality; Fuzzy = SequenceMatcher ratio >= 0.80",
+    "text_qid_13": "Comma-separated item sets comparison (Exact = set equality, Fuzzy = Jaccard >= 0.80)"
+  },
+  "overall_all_8_qids": {
+    "num_questions": 320,
+    "rules": {
+      "exact": 0.1625,
+      "fuzzy": 0.175,
+      "exact_ci95": [
+        0.1222,
+        0.2062
+      ],
+      "fuzzy_ci95": [
+        0.1321,
+        0.2194
+      ]
+    },
+    "vlm": {
+      "exact": 0.6656,
+      "fuzzy": 0.6937,
+      "exact_ci95": [
+        0.6163,
+        0.713
+      ],
+      "fuzzy_ci95": [
+        0.6435,
+        0.7412
+      ]
+    }
+  },
+  "text_qids_2_3_13_separate": {
+    "num_questions": 120,
+    "rules": {
+      "exact": 0.325,
+      "fuzzy": 0.3583,
+      "exact_ci95": [
+        0.2393,
+        0.4118
+      ],
+      "fuzzy_ci95": [
+        0.2707,
+        0.448
+      ]
+    },
+    "vlm": {
+      "exact": 0.6667,
+      "fuzzy": 0.7417,
+      "exact_ci95": [
+        0.5755,
+        0.746
+      ],
+      "fuzzy_ci95": [
+        0.6548,
+        0.819
+      ]
+    }
+  },
+  "numeric_qids_4_5_6_7_12_separate": {
+    "num_questions": 200,
+    "rules": {
+      "exact": 0.065,
+      "fuzzy": 0.065,
+      "exact_ci95": [
+        0.0329,
+        0.1015
+      ],
+      "fuzzy_ci95": [
+        0.0329,
+        0.1015
+      ]
+    },
+    "vlm": {
+      "exact": 0.665,
+      "fuzzy": 0.665,
+      "exact_ci95": [
+        0.5991,
+        0.73
+      ],
+      "fuzzy_ci95": [
+        0.5991,
+        0.73
+      ]
+    }
+  },
+  "per_qid_breakdown": {
+    "2": {
+      "question": "What is the label of the x-axis?",
+      "category": "text",
+      "N": 40,
+      "rules": {
+        "exact": 0.325,
+        "exact_ci95": [
+          0.1795,
+          0.4773
+        ],
+        "fuzzy": 0.375,
+        "fuzzy_ci95": [
+          0.2222,
+          0.5334
+        ]
+      },
+      "vlm": {
+        "exact": 0.725,
+        "exact_ci95": [
+          0.5788,
+          0.8571
+        ],
+        "fuzzy": 0.825,
+        "fuzzy_ci95": [
+          0.6977,
+          0.9349
+        ]
+      }
+    },
+    "3": {
+      "question": "What is the label of the y-axis?",
+      "category": "text",
+      "N": 40,
+      "rules": {
+        "exact": 0.525,
+        "exact_ci95": [
+          0.3721,
+          0.6897
+        ],
+        "fuzzy": 0.575,
+        "fuzzy_ci95": [
+          0.413,
+          0.7408
+        ]
+      },
+      "vlm": {
+        "exact": 0.75,
+        "exact_ci95": [
+          0.6129,
+          0.875
+        ],
+        "fuzzy": 0.85,
+        "fuzzy_ci95": [
+          0.7317,
+          0.9487
+        ]
+      }
+    },
+    "4": {
+      "question": "What is the leftmost labeled tick on the x-axis?",
+      "category": "numeric",
+      "N": 40,
+      "rules": {
+        "exact": 0.05,
+        "exact_ci95": [
+          0.0,
+          0.129
+        ],
+        "fuzzy": 0.05,
+        "fuzzy_ci95": [
+          0.0,
+          0.129
+        ]
+      },
+      "vlm": {
+        "exact": 0.75,
+        "exact_ci95": [
+          0.6129,
+          0.8864
+        ],
+        "fuzzy": 0.75,
+        "fuzzy_ci95": [
+          0.6129,
+          0.8864
+        ]
+      }
+    },
+    "5": {
+      "question": "What is the rightmost labeled tick on the x-axis?",
+      "category": "numeric",
+      "N": 40,
+      "rules": {
+        "exact": 0.0,
+        "exact_ci95": [
+          0.0,
+          0.0
+        ],
+        "fuzzy": 0.0,
+        "fuzzy_ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "vlm": {
+        "exact": 0.725,
+        "exact_ci95": [
+          0.5897,
+          0.8611
+        ],
+        "fuzzy": 0.725,
+        "fuzzy_ci95": [
+          0.5897,
+          0.8611
+        ]
+      }
+    },
+    "6": {
+      "question": "What is the spatially lowest labeled tick on the y-axis?",
+      "category": "numeric",
+      "N": 40,
+      "rules": {
+        "exact": 0.025,
+        "exact_ci95": [
+          0.0,
+          0.0833
+        ],
+        "fuzzy": 0.025,
+        "fuzzy_ci95": [
+          0.0,
+          0.0833
+        ]
+      },
+      "vlm": {
+        "exact": 0.5,
+        "exact_ci95": [
+          0.3428,
+          0.6593
+        ],
+        "fuzzy": 0.5,
+        "fuzzy_ci95": [
+          0.3428,
+          0.6593
+        ]
+      }
+    },
+    "7": {
+      "question": "What is the spatially highest labeled tick on the y-axis?",
+      "category": "numeric",
+      "N": 40,
+      "rules": {
+        "exact": 0.0,
+        "exact_ci95": [
+          0.0,
+          0.0
+        ],
+        "fuzzy": 0.0,
+        "fuzzy_ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "vlm": {
+        "exact": 0.625,
+        "exact_ci95": [
+          0.475,
+          0.7778
+        ],
+        "fuzzy": 0.625,
+        "fuzzy_ci95": [
+          0.475,
+          0.7778
+        ]
+      }
+    },
+    "12": {
+      "question": "How many discrete labels are there in the legend?",
+      "category": "numeric",
+      "N": 40,
+      "rules": {
+        "exact": 0.25,
+        "exact_ci95": [
+          0.1163,
+          0.3871
+        ],
+        "fuzzy": 0.25,
+        "fuzzy_ci95": [
+          0.1163,
+          0.3871
+        ]
+      },
+      "vlm": {
+        "exact": 0.725,
+        "exact_ci95": [
+          0.5869,
+          0.8611
+        ],
+        "fuzzy": 0.725,
+        "fuzzy_ci95": [
+          0.5869,
+          0.8611
+        ]
+      }
+    },
+    "13": {
+      "question": "What are the names of the labels in the legend? (from top to bottom, then left to right)",
+      "category": "text",
+      "N": 40,
+      "rules": {
+        "exact": 0.125,
+        "exact_ci95": [
+          0.0286,
+          0.2354
+        ],
+        "fuzzy": 0.125,
+        "fuzzy_ci95": [
+          0.0286,
+          0.2354
+        ]
+      },
+      "vlm": {
+        "exact": 0.525,
+        "exact_ci95": [
+          0.3714,
+          0.6744
+        ],
+        "fuzzy": 0.55,
+        "fuzzy_ci95": [
+          0.3902,
+          0.7
+        ]
+      }
+    }
+  },
+  "generated_by": "pipelines/evaluate_charxiv.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:53:53"
+}

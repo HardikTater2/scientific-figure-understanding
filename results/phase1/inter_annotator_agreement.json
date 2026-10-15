@@ -1,0 +1,8 @@
+{
+  "status": "NOT DONE",
+  "provenance": "none",
+  "note": "No dual human annotation was performed. Quarantined under strict honesty rules.",
+  "generated_by": "scripts/evaluate_agreement.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:38:49"
+}

@@ -1,0 +1,8 @@
+{
+  "status": "NOT DONE",
+  "provenance": "none",
+  "note": "No human ratings collected. Quarantined under strict honesty rules.",
+  "generated_by": "src/evaluation/validate_scq_human.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:38:49"
+}

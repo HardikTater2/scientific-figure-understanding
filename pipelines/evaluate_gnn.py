@@ -45,6 +45,7 @@ from src.grounding.grounding_features import TEXT_ELEMENT_TYPES, build_grounding
 from src.nlp.scientific_ner import ScientificNERExtractor
 from src.vision.figure_processor import FigureProcessor
 from src.vision.ocr_engine import OCREngine
+from src.common_metadata import get_runtime_metadata
 
 _NER = ScientificNERExtractor()
 
@@ -294,6 +295,9 @@ def main():
         report["heldout_vocabulary"] = hv
         print(f"  A rules F1={hv['A_rules']['f1']}  B gnn F1={hv['B_gnn']['f1']['mean']}  "
               f"no-MP F1={hv['diagnostic_no_message_passing']['f1']['mean']}  (links={hv['num_test_links']})")
+
+    report["provenance"] = "synthetic"
+    report.update(get_runtime_metadata("pipelines/evaluate_gnn.py"))
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w") as f:

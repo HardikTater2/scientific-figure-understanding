@@ -1,0 +1,75 @@
+{
+  "provenance": "analysis",
+  "description": "Automatic error categorization across external human benchmark evaluations.",
+  "chart_info": {
+    "total_gold_boxes_analyzed": 70581,
+    "gold_box_classifier_errors": {
+      "axis_missed_or_other": 430,
+      "legend_missed_or_other": 3479,
+      "label_missed_or_other": 3610,
+      "tick_dropped_or_misclassified": 12750,
+      "other_false_positives": 4103
+    },
+    "ocr_pipeline_errors": {
+      "unmatched_numeric_ticks_dropped_by_design": 897,
+      "ocr_detection_misses_axis": 92,
+      "ocr_detection_misses_legend": 297,
+      "ocr_detection_misses_label": 137,
+      "spurious_other_detections": 543
+    },
+    "primary_bottleneck": "Numeric tick suppression by FigureProcessor (48k boxes in gold, dropped by regex is_numeric_text)"
+  },
+  "charxiv": {
+    "questions_breakdown": {},
+    "vlm_raw_records_audited": 320,
+    "vlm_error_taxonomy": {
+      "semantic_orientation_confusion_ticks": 160,
+      "axis_label_omission": 80,
+      "legend_list_partial_or_missing": 80,
+      "numeric_tick_precision_mismatch": 0,
+      "unformatted_prompt_repetition": 0
+    },
+    "primary_bottleneck": "Lack of chat template causing prompt repetition, and small-tick optical resolution limits."
+  },
+  "scierc": {
+    "num_test_documents": 100,
+    "total_gold_entities": 1441,
+    "micro_span_f1": 0.6277,
+    "entity_type_error_distribution": {
+      "METHOD": {
+        "gold_support": 430,
+        "missed_entities": 129,
+        "false_positives": 87,
+        "f1": 0.7344
+      },
+      "METRIC": {
+        "gold_support": 71,
+        "missed_entities": 30,
+        "false_positives": 36,
+        "f1": 0.5442
+      },
+      "DATASET": {
+        "gold_support": 158,
+        "missed_entities": 58,
+        "false_positives": 61,
+        "f1": 0.627
+      },
+      "TASK": {
+        "gold_support": 262,
+        "missed_entities": 106,
+        "false_positives": 145,
+        "f1": 0.5532
+      },
+      "VARIABLE": {
+        "gold_support": 520,
+        "missed_entities": 208,
+        "false_positives": 213,
+        "f1": 0.5966
+      }
+    },
+    "primary_bottleneck": "Variable and Task entities exhibit highest false alarm rate due to academic ambiguity with generic nouns."
+  },
+  "generated_by": "scripts/error_categorization.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:54:02"
+}

@@ -1,0 +1,77 @@
+{
+  "provenance": "silver_heuristic",
+  "num_val_pairs": 1098,
+  "num_test_pairs": 13094,
+  "num_val_positives": 23,
+  "num_test_positives": 191,
+  "baselines": {
+    "tuned_rules": {
+      "val_threshold": 0.2773,
+      "val_f1": 0.8085,
+      "test_metrics": {
+        "precision": 0.6727,
+        "recall": 0.5812,
+        "f1": 0.6236,
+        "tp": 111,
+        "fp": 54,
+        "fn": 80
+      },
+      "latency_ms": 0.82
+    },
+    "logistic_regression": {
+      "val_threshold": 0.9504,
+      "val_f1": 0.7917,
+      "test_metrics": {
+        "precision": 0.6607,
+        "recall": 0.7749,
+        "f1": 0.7133,
+        "tp": 148,
+        "fp": 76,
+        "fn": 43
+      },
+      "latency_ms": 0.0,
+      "train_time_s": 0.06,
+      "coefficients": {
+        "char_trigram_jaccard": 1.9238,
+        "difflib_ratio": 1.3019,
+        "acronym_match": 0.0,
+        "substring_match": 5.2061,
+        "token_overlap": 1.6433,
+        "defined_in_paragraph": 0.0,
+        "type_compat_axis_metric_variable": 0.6967,
+        "type_compat_legend_label_method": 1.312,
+        "type_compat_label_material_variable": 1.368,
+        "rule_edge": 1.0669
+      }
+    },
+    "gradient_boosting": {
+      "val_threshold": 0.307,
+      "val_f1": 1.0,
+      "test_metrics": {
+        "precision": 0.7077,
+        "recall": 0.7225,
+        "f1": 0.715,
+        "tp": 138,
+        "fp": 57,
+        "fn": 53
+      },
+      "latency_ms": 0.17,
+      "train_time_s": 1.704,
+      "permutation_importances": {
+        "char_trigram_jaccard": 0.0064,
+        "difflib_ratio": 0.0017,
+        "acronym_match": 0.0,
+        "substring_match": 0.0069,
+        "token_overlap": 0.0,
+        "defined_in_paragraph": 0.0,
+        "type_compat_axis_metric_variable": 0.0028,
+        "type_compat_legend_label_method": 0.0029,
+        "type_compat_label_material_variable": 0.0006,
+        "rule_edge": 0.0
+      }
+    }
+  },
+  "generated_by": "pipelines/baseline_grounding_classifiers.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:48:00"
+}

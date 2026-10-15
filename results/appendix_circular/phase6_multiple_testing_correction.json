@@ -1,0 +1,76 @@
+{
+  "alpha": 0.05,
+  "method": "Holm-Bonferroni (step-down)",
+  "families": {
+    "family_1_grounding_baselines": {
+      "description": "Comparisons of Logistic Regression grounding vs alternative models on SciCap-Grounding-Silver-v0",
+      "tests": [
+        {
+          "hypothesis": "LR > Untuned Rules",
+          "raw_p_value": 1e-05,
+          "adjusted_p_value": 4e-05,
+          "significant_after_correction": true,
+          "claimed_effect": "+0.5978 F1",
+          "verdict": "REJECT H0 (Significant)"
+        },
+        {
+          "hypothesis": "LR > Tuned Rules",
+          "raw_p_value": 0.0001,
+          "adjusted_p_value": 0.00016,
+          "significant_after_correction": true,
+          "claimed_effect": "+0.0897 F1",
+          "verdict": "REJECT H0 (Significant)"
+        },
+        {
+          "hypothesis": "LR > Zero-Shot VLM",
+          "raw_p_value": 5e-05,
+          "adjusted_p_value": 0.00015,
+          "significant_after_correction": true,
+          "claimed_effect": "+0.3080 F1",
+          "verdict": "REJECT H0 (Significant)"
+        },
+        {
+          "hypothesis": "LR > GNN (Message Passing)",
+          "raw_p_value": 8e-05,
+          "adjusted_p_value": 0.00016,
+          "significant_after_correction": true,
+          "claimed_effect": "+0.3725 F1",
+          "verdict": "REJECT H0 (Significant)"
+        }
+      ]
+    },
+    "family_3_scq_human_correlation": {
+      "description": "Spearman rank correlation against human quality ratings",
+      "tests": [
+        {
+          "hypothesis": "SCQ correlates with Human Ratings",
+          "raw_p_value": 4.45e-32,
+          "adjusted_p_value": 0.0,
+          "significant_after_correction": true,
+          "claimed_effect": "rho = +0.8714",
+          "verdict": "REJECT H0 (Significant)"
+        },
+        {
+          "hypothesis": "BLEU-4 correlates with Human Ratings",
+          "raw_p_value": 0.351,
+          "adjusted_p_value": 0.351,
+          "significant_after_correction": false,
+          "claimed_effect": "rho = +0.0943",
+          "verdict": "FAIL TO REJECT (Not Significant)"
+        },
+        {
+          "hypothesis": "ROUGE-L correlates with Human Ratings",
+          "raw_p_value": 6.01e-06,
+          "adjusted_p_value": 1.2e-05,
+          "significant_after_correction": true,
+          "claimed_effect": "rho = +0.4353",
+          "verdict": "REJECT H0 (Significant)"
+        }
+      ]
+    }
+  },
+  "provenance": "silver_heuristic",
+  "generated_by": "src/evaluation/multiple_testing.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:49:57"
+}

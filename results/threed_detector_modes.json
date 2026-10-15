@@ -49,5 +49,9 @@
       "false_positive_rate": 0.0244,
       "n": 287
     }
-  }
+  },
+  "provenance": "synthetic",
+  "generated_by": "pipelines/evaluate_3d_detector_modes.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:50:55"
 }

@@ -1,0 +1,244 @@
+{
+  "provenance": "human_external_dataset",
+  "benchmark": "CHART-Info UB PMC Test Split (ICPR 2020 / ICDAR 2023 / ICPR 2024)",
+  "source_url": "https://tc11.cvc.uab.es/datasets/ICPR2020-CHART-Info_1",
+  "taxonomy_classes": [
+    "AXIS",
+    "LEGEND",
+    "LABEL",
+    "TICK",
+    "OTHER"
+  ],
+  "non_tick_classes": [
+    "AXIS",
+    "LEGEND",
+    "LABEL",
+    "OTHER"
+  ],
+  "mapping_table": {
+    "axis_title": "AXIS",
+    "x_axis_title": "AXIS",
+    "y_axis_title": "AXIS",
+    "legend_label": "LEGEND",
+    "legend_title": "LEGEND",
+    "tick_label": "TICK",
+    "tick_grouping": "TICK",
+    "mark_label": "LABEL",
+    "value_label": "LABEL",
+    "chart_title": "OTHER",
+    "other": "OTHER"
+  },
+  "full_test_split_charts": 3280,
+  "gold_boxes_evaluation": {
+    "num_charts": 3280,
+    "runtime_s": 0.33,
+    "accuracy": 0.6547,
+    "macro_f1": 0.4862,
+    "macro_f1_non_tick": 0.4072,
+    "total_boxes": 70581,
+    "per_class": {
+      "AXIS": {
+        "precision": 0.5296,
+        "recall": 0.9158,
+        "f1": 0.6711,
+        "support": 5096
+      },
+      "LEGEND": {
+        "precision": 0.7351,
+        "recall": 0.5449,
+        "f1": 0.6258,
+        "support": 7644
+      },
+      "LABEL": {
+        "precision": 0.0498,
+        "recall": 0.1492,
+        "f1": 0.0746,
+        "support": 4243
+      },
+      "TICK": {
+        "precision": 0.8801,
+        "recall": 0.737,
+        "f1": 0.8022,
+        "support": 48477
+      },
+      "OTHER": {
+        "precision": 0.365,
+        "recall": 0.1988,
+        "f1": 0.2574,
+        "support": 5121
+      }
+    },
+    "bootstrap_ci95_by_chart": {
+      "accuracy_ci95": [
+        0.6437,
+        0.6668
+      ],
+      "macro_f1_ci95": [
+        0.4768,
+        0.4963
+      ],
+      "macro_f1_non_tick_ci95": [
+        0.3969,
+        0.4183
+      ]
+    }
+  },
+  "ocr_boxes_evaluation": {
+    "num_charts": 250,
+    "runtime_s": 1.35,
+    "standard_all_unmatched_misses": {
+      "accuracy": 0.1587,
+      "macro_f1": 0.2732,
+      "macro_f1_non_tick": 0.3415,
+      "total_boxes": 5679,
+      "per_class": {
+        "AXIS": {
+          "precision": 0.5191,
+          "recall": 0.7996,
+          "f1": 0.6295,
+          "support": 459
+        },
+        "LEGEND": {
+          "precision": 0.7421,
+          "recall": 0.4436,
+          "f1": 0.5553,
+          "support": 532
+        },
+        "LABEL": {
+          "precision": 0.0362,
+          "recall": 0.1747,
+          "f1": 0.0599,
+          "support": 166
+        },
+        "TICK": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3938
+        },
+        "OTHER": {
+          "precision": 0.0698,
+          "recall": 0.4606,
+          "f1": 0.1213,
+          "support": 584
+        }
+      },
+      "bootstrap_ci95_by_chart": {
+        "macro_f1": [
+          0.2521,
+          0.2934
+        ],
+        "macro_f1_non_tick": [
+          0.3151,
+          0.3668
+        ],
+        "accuracy": [
+          0.1411,
+          0.1768
+        ]
+      }
+    },
+    "adjusted_numeric_ticks_matched_and_dropped": {
+      "accuracy": 0.3168,
+      "macro_f1": 0.3536,
+      "macro_f1_non_tick": 0.3492,
+      "total_boxes": 5679,
+      "per_class": {
+        "AXIS": {
+          "precision": 0.5191,
+          "recall": 0.7996,
+          "f1": 0.6295,
+          "support": 459
+        },
+        "LEGEND": {
+          "precision": 0.7421,
+          "recall": 0.4436,
+          "f1": 0.5553,
+          "support": 532
+        },
+        "LABEL": {
+          "precision": 0.0362,
+          "recall": 0.1747,
+          "f1": 0.0599,
+          "support": 166
+        },
+        "TICK": {
+          "precision": 1.0,
+          "recall": 0.228,
+          "f1": 0.3714,
+          "support": 3938
+        },
+        "OTHER": {
+          "precision": 0.0911,
+          "recall": 0.4606,
+          "f1": 0.1521,
+          "support": 584
+        }
+      },
+      "bootstrap_ci95_by_chart": {
+        "macro_f1": [
+          0.3275,
+          0.3798
+        ],
+        "macro_f1_non_tick": [
+          0.3219,
+          0.3757
+        ],
+        "accuracy": [
+          0.2884,
+          0.3483
+        ]
+      }
+    },
+    "ocr_detection_recall_per_role": {
+      "AXIS": {
+        "gold_support": 406,
+        "detected_by_ocr": 365,
+        "recall": 0.899,
+        "ci95": [
+          0.8655,
+          0.9329
+        ]
+      },
+      "LEGEND": {
+        "gold_support": 519,
+        "detected_by_ocr": 439,
+        "recall": 0.8459,
+        "ci95": [
+          0.7935,
+          0.8895
+        ]
+      },
+      "LABEL": {
+        "gold_support": 166,
+        "detected_by_ocr": 56,
+        "recall": 0.3373,
+        "ci95": [
+          0.1104,
+          0.7313
+        ]
+      },
+      "TICK": {
+        "gold_support": 3904,
+        "detected_by_ocr": 1577,
+        "recall": 0.4039,
+        "ci95": [
+          0.3628,
+          0.4468
+        ]
+      },
+      "OTHER": {
+        "gold_support": 378,
+        "detected_by_ocr": 177,
+        "recall": 0.4683,
+        "ci95": [
+          0.3474,
+          0.6018
+        ]
+      }
+    }
+  },
+  "generated_by": "pipelines/evaluate_chart_info.py",
+  "git_commit": "87529f154437d9611e352b9ff54f43399987e423",
+  "timestamp": "2026-10-15T10:44:47"
+}
